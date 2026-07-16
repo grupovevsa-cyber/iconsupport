@@ -132,8 +132,8 @@ export interface VisitaReporte {
   // Campos extendidos
   empresa_id?: string;
   sucursal_id?: string;
-  supervisor_cliente?: string;
   equipos_ids?: string[];
+  supervisor_cliente?: string;
   creado_en: string;
   // Relaciones
   ticket?: Ticket;

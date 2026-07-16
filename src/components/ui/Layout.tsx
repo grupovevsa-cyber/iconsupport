@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import {
   TicketIcon, MapPin, Plus, Users,
   LogOut, Zap, Menu, X, ChevronRight,
-  MessageCircle, Settings, FileText
+  MessageCircle, Settings, FileText, ClipboardList
 } from 'lucide-react'
 import type { Profile, UserRole } from '../../types'
 
@@ -37,6 +37,7 @@ const NAV_LINKS: Record<UserRole, NavItem[]> = {
   ],
   admin: [
     { to: '/admin/nuevo-ticket',   icon: Plus,            label: 'Crear Ticket' },
+    { to: '/admin/nueva-tarea',    icon: ClipboardList,   label: 'Asignar Tarea' },
     { to: '/admin/dashboard',      icon: TicketIcon,      label: 'Todos los Tickets' },
     { to: '/admin/informes',       icon: FileText,        label: 'Informes' },
     { to: '/tecnico/asistencia',   icon: MapPin,          label: 'Asistencias' },

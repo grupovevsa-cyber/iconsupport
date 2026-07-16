@@ -14,6 +14,7 @@ import { UsuariosPage } from './pages/admin/UsuariosPage'
 import { ChatBotPage } from './pages/admin/ChatBotPage'
 import { ConfiguracionPage } from './pages/admin/ConfiguracionPage'
 import { InformesPage } from './pages/shared/InformesPage'
+import { NuevaTareaPage } from './pages/admin/NuevaTareaPage'
 
 // ============================================================
 // ICON Support — App principal con routing
@@ -125,6 +126,10 @@ function AppWithLayout() {
         <Route
           path="/admin/informes"
           element={<InformesPage currentUser={profile} />}
+        />
+        <Route
+          path="/admin/nueva-tarea"
+          element={<NuevaTareaPage />}
         />
         <Route
           path="/admin/usuarios"
