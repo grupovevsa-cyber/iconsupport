@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   TicketIcon, Filter, Search, ChevronDown,
-  AlertCircle, Timer, CheckCircle2, Loader2, Eye, Users
+  AlertCircle, Timer, CheckCircle2, Loader2, Eye, Users, FileText
 } from 'lucide-react'
 import { QRTicket } from '../../components/QRTicket'
 import { format } from 'date-fns'
@@ -31,6 +32,7 @@ interface DashboardTecnicoProps {
 }
 
 export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
+  const navigate = useNavigate()
   const { tickets, loading, fetchTickets, actualizarEstado, asignarTecnico } = useTickets()
   const [filtroEstado, setFiltroEstado] = useState<TicketEstado | 'todos'>('todos')
   const [busqueda, setBusqueda] = useState('')
@@ -238,6 +240,18 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
                           <Eye size={11} />
                           Ver QR
                         </button>
+
+                        {/* Botón Generar Reporte: disponible para técnico y admin en tickets no cerrados */}
+                        {(ticket.estado as string) !== 'cerrado' && (['tecnico', 'admin'] as string[]).includes(currentUser.rol) && (
+                          <button
+                            id={`generar-reporte-${ticket.id.substring(0, 8)}`}
+                            onClick={() => navigate(`/tecnico/reporte/${ticket.id}`)}
+                            className="flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+                          >
+                            <FileText size={11} />
+                            Reporte
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

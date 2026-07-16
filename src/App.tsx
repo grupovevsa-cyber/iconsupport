@@ -9,6 +9,7 @@ import { NuevoTicketPage } from './pages/cliente/NuevoTicketPage'
 import { SeguimientoPage } from './pages/cliente/SeguimientoPage'
 import { DashboardTecnicoPage } from './pages/tecnico/DashboardTecnicoPage'
 import { AsistenciaPage } from './pages/tecnico/AsistenciaPage'
+import { FormularioReportePage } from './pages/tecnico/FormularioReportePage'
 import { UsuariosPage } from './pages/admin/UsuariosPage'
 
 // ============================================================
@@ -86,6 +87,15 @@ function AppWithLayout() {
         <Route
           path="/tecnico/asistencia"
           element={<AsistenciaPage tecnico={profile} />}
+        />
+        {/* Formulario de reporte: desde ticket o desde asistencia */}
+        <Route
+          path="/tecnico/reporte/:ticketId"
+          element={<FormularioReportePage />}
+        />
+        <Route
+          path="/tecnico/reporte/:ticketId/:asistenciaId"
+          element={<FormularioReportePage />}
         />
 
         {/* Rutas de admin */}

@@ -448,3 +448,49 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+-- ============================================================
+-- 6. TABLA: tareas (acciones y subtareas del ticket)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.tareas (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ticket_id     UUID NOT NULL REFERENCES public.tickets(id) ON DELETE CASCADE,
+  tecnico_id    UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  titulo        TEXT NOT NULL,
+  descripcion   TEXT,
+  estado        TEXT NOT NULL DEFAULT 'abierta'
+                  CHECK (estado IN ('abierta', 'completada', 'cerrada')),
+  creado_en     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  actualizado_en TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Índices de búsqueda
+CREATE INDEX IF NOT EXISTS idx_tareas_ticket_id ON public.tareas(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_tareas_tecnico_id ON public.tareas(tecnico_id);
+
+-- Habilitar RLS
+ALTER TABLE public.tareas ENABLE ROW LEVEL SECURITY;
+
+-- Configurar Trigger para actualizar la columna actualizado_en
+DROP TRIGGER IF EXISTS trg_tareas_updated_at ON public.tareas;
+CREATE TRIGGER trg_tareas_updated_at
+  BEFORE UPDATE ON public.tareas
+  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- Políticas RLS
+-- Lectura pública para cualquier usuario que tenga acceso al ticket
+CREATE POLICY "tareas_select" ON public.tareas
+  FOR SELECT USING (true);
+
+-- Escritura: Técnicos y administradores
+CREATE POLICY "tareas_insert" ON public.tareas
+  FOR INSERT WITH CHECK (public.get_my_rol() IN ('admin', 'tecnico'));
+
+CREATE POLICY "tareas_update" ON public.tareas
+  FOR UPDATE USING (public.get_my_rol() IN ('admin', 'tecnico'));
+
+-- Eliminación: Solo administradores
+CREATE POLICY "tareas_delete" ON public.tareas
+  FOR DELETE USING (public.get_my_rol() = 'admin');
+
+

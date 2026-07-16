@@ -2,13 +2,17 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   Clock, User, Tag, AlertCircle, CheckCircle2,
-  Loader2, MessageSquare, Zap, Timer
+  Loader2, MessageSquare, Zap, Timer, CheckSquare, Trash2, Plus, Circle
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { toast } from 'react-hot-toast'
 import { useTickets } from '../../hooks/useTickets'
+import { useAuth } from '../../hooks/useAuth'
+import { useTasks } from '../../hooks/useTasks'
 import { QRTicket } from '../../components/QRTicket'
-import type { Ticket } from '../../types'
+import { supabase } from '../../lib/supabaseClient'
+import type { Ticket, TareaEstado, Profile } from '../../types'
 
 // ============================================================
 // Página: Seguimiento de Ticket (pública o autenticada)
@@ -30,16 +34,74 @@ const PRIORIDAD_CONFIG = {
 export function SeguimientoPage() {
   const { id } = useParams<{ id: string }>()
   const { getTicket } = useTickets()
+  const { user } = useAuth()
+  const { tareas, fetchTareas, crearTarea, actualizarEstadoTarea, eliminarTarea } = useTasks()
+
   const [ticket, setTicket] = useState<Ticket | null>(null)
   const [cargando, setCargando] = useState(true)
+
+  // Formulario de Tareas
+  const [nuevoTitulo, setNuevoTitulo] = useState('')
+  const [nuevaDesc, setNuevaDesc] = useState('')
+  const [tecnicoAsignadoId, setTecnicoAsignadoId] = useState('')
+  const [tecnicos, setTecnicos] = useState<Profile[]>([])
+  const [guardandoTarea, setGuardandoTarea] = useState(false)
 
   useEffect(() => {
     if (!id) return
     getTicket(id).then(t => {
       setTicket(t)
       setCargando(false)
+      // Si el ticket tiene técnico asignado, pre-seleccionarlo
+      if (t?.tecnico_asignado_id) {
+        setTecnicoAsignadoId(t.tecnico_asignado_id)
+      }
     })
+    fetchTareas(id)
   }, [id])
+
+  useEffect(() => {
+    if (user?.profile?.rol === 'admin' || user?.profile?.rol === 'tecnico') {
+      supabase.from('profiles').select('*').eq('rol', 'tecnico')
+        .then(({ data }) => setTecnicos((data as Profile[]) || []))
+    }
+  }, [user])
+
+  const handleCrearTarea = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!nuevoTitulo.trim() || !id) return
+    setGuardandoTarea(true)
+    try {
+      await crearTarea(id, nuevoTitulo.trim(), nuevaDesc.trim(), tecnicoAsignadoId || undefined)
+      setNuevoTitulo('')
+      setNuevaDesc('')
+      toast.success('Tarea agregada correctamente.')
+    } catch (err: any) {
+      toast.error('Error al crear tarea: ' + err.message)
+    } finally {
+      setGuardandoTarea(false)
+    }
+  }
+
+  const handleActualizarEstado = async (tareaId: string, estado: TareaEstado) => {
+    if (!id) return
+    try {
+      await actualizarEstadoTarea(id, tareaId, estado)
+      toast.success('Estado de la tarea actualizado.')
+    } catch (err: any) {
+      toast.error('Error al actualizar estado: ' + err.message)
+    }
+  }
+
+  const handleEliminar = async (tareaId: string) => {
+    if (!id || !window.confirm('¿Seguro que deseas eliminar esta tarea?')) return
+    try {
+      await eliminarTarea(id, tareaId)
+      toast.success('Tarea eliminada.')
+    } catch (err: any) {
+      toast.error('Error al eliminar tarea: ' + err.message)
+    }
+  }
 
   if (cargando) {
     return (
@@ -170,6 +232,164 @@ export function SeguimientoPage() {
           </div>
         </div>
 
+        {/* Tareas del Ticket */}
+        <div className="bg-surface-900 rounded-2xl border border-slate-800 p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <CheckSquare size={14} className="text-brand-400" />
+              Tareas y Actividades
+            </h2>
+            <span className="text-xs bg-surface-800 text-slate-400 px-2.5 py-0.5 rounded-full font-semibold">
+              {tareas.filter(t => t.estado === 'completada').length} / {tareas.length} completadas
+            </span>
+          </div>
+
+          {/* Lista de Tareas */}
+          {tareas.length === 0 ? (
+            <p className="text-sm text-slate-500 text-center py-4">No hay tareas creadas para este ticket.</p>
+          ) : (
+            <div className="space-y-3">
+              {tareas.map(tarea => {
+                const isCompleted = tarea.estado === 'completada';
+                const isClosed = tarea.estado === 'cerrada';
+                return (
+                  <div
+                    key={tarea.id}
+                    className={`flex items-start justify-between gap-3 p-3 rounded-xl border ${
+                      isCompleted
+                        ? 'bg-emerald-500/5 border-emerald-500/10'
+                        : isClosed
+                        ? 'bg-slate-900 border-slate-800/40 opacity-60'
+                        : 'bg-surface-800/40 border-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      {/* Estado Icon */}
+                      <div className="mt-0.5 shrink-0">
+                        {isCompleted ? (
+                          <CheckCircle2 size={16} className="text-emerald-400" />
+                        ) : isClosed ? (
+                          <Circle size={16} className="text-slate-600 fill-slate-800" />
+                        ) : (
+                          <Circle size={16} className="text-amber-400" />
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className={`text-sm font-medium ${isCompleted ? 'text-emerald-300 line-through' : isClosed ? 'text-slate-500 line-through' : 'text-white'}`}>
+                          {tarea.titulo}
+                        </p>
+                        {tarea.descripcion && (
+                          <p className="text-xs text-slate-400 mt-1 leading-relaxed">{tarea.descripcion}</p>
+                        )}
+                        {tarea.tecnico && (
+                          <div className="flex items-center gap-1 mt-1 text-[10px] text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-full w-fit">
+                            <span className="font-semibold">Técnico:</span> {tarea.tecnico.nombre}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Acciones para Técnicos y Admins */}
+                    {(user?.profile?.rol === 'admin' || user?.profile?.rol === 'tecnico') && ticket.estado !== 'cerrado' && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        {tarea.estado !== 'completada' && (
+                          <button
+                            onClick={() => handleActualizarEstado(tarea.id, 'completada')}
+                            className="p-1.5 text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 rounded-lg transition-colors border border-emerald-500/20"
+                            title="Completar"
+                          >
+                            <CheckCircle2 size={13} />
+                          </button>
+                        )}
+                        {tarea.estado !== 'abierta' && (
+                          <button
+                            onClick={() => handleActualizarEstado(tarea.id, 'abierta')}
+                            className="p-1.5 text-amber-400 hover:text-amber-300 bg-amber-500/10 rounded-lg transition-colors border border-amber-500/20"
+                            title="Reabrir"
+                          >
+                            <Timer size={13} />
+                          </button>
+                        )}
+                        {tarea.estado !== 'cerrada' && (
+                          <button
+                            onClick={() => handleActualizarEstado(tarea.id, 'cerrada')}
+                            className="p-1.5 text-slate-400 hover:text-slate-300 bg-slate-800 rounded-lg transition-colors border border-slate-700"
+                            title="Cerrar"
+                          >
+                            <Circle size={13} />
+                          </button>
+                        )}
+                        {user?.profile?.rol === 'admin' && (
+                          <button
+                            onClick={() => handleEliminar(tarea.id)}
+                            className="p-1.5 text-red-400 hover:text-red-300 bg-red-500/10 rounded-lg transition-colors border border-red-500/20"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Formulario de creación (solo Admin/Técnico y ticket abierto/proceso) */}
+          {(user?.profile?.rol === 'admin' || user?.profile?.rol === 'tecnico') && ticket.estado !== 'cerrado' && (
+            <form onSubmit={handleCrearTarea} className="pt-4 border-t border-slate-800 space-y-3">
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Nueva Tarea</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  required
+                  placeholder="Título de la tarea... (Ej. Reemplazar cable de red)"
+                  value={nuevoTitulo}
+                  onChange={e => setNuevoTitulo(e.target.value)}
+                  className="w-full bg-surface-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                />
+                
+                <select
+                  value={tecnicoAsignadoId}
+                  onChange={e => setTecnicoAsignadoId(e.target.value)}
+                  className="w-full bg-surface-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-brand-500 appearance-none"
+                >
+                  <option value="">Asignar a técnico (opcional)...</option>
+                  {tecnicos.map(t => (
+                    <option key={t.id} value={t.id}>{t.nombre}</option>
+                  ))}
+                </select>
+              </div>
+
+              <input
+                type="text"
+                placeholder="Descripción opcional..."
+                value={nuevaDesc}
+                onChange={e => setNuevaDesc(e.target.value)}
+                className="w-full bg-surface-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              />
+
+              <button
+                type="submit"
+                disabled={guardandoTarea}
+                className="btn-primary w-full flex items-center justify-center gap-1.5 py-2 text-xs font-semibold"
+              >
+                {guardandoTarea ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : (
+                  <>
+                    <Plus size={13} />
+                    Agregar Tarea
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+        </div>
+
         {/* Comentarios */}
         {ticket.comentarios && ticket.comentarios.filter(c => !c.es_interno).length > 0 && (
           <div className="bg-surface-900 rounded-2xl border border-slate-800 p-5 space-y-3">
@@ -222,3 +442,4 @@ export function SeguimientoPage() {
     </div>
   )
 }
+

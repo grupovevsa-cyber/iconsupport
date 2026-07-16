@@ -3,7 +3,7 @@ import autoTable from 'jspdf-autotable'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { supabase, uploadFile } from './supabaseClient'
-import type { Ticket, Asistencia, VisitaReporte, Profile } from '../types'
+import type { Ticket, Asistencia, VisitaReporte, Profile, Empresa, Sucursal, Equipo, ImagenReporte } from '../types'
 
 // ============================================================
 // ICON Support — Generador de PDF de Reporte Técnico
@@ -17,6 +17,12 @@ interface PdfReporteData {
   tecnico: Profile
   cliente: Profile
   firmaDataUrl?: string  // base64 PNG de la firma del cliente
+  // Campos extendidos del formulario
+  empresa?: Empresa
+  sucursal?: Sucursal
+  supervisorCliente?: string
+  equipos?: Equipo[]
+  fotos?: { url: string; descripcion?: string }[]
 }
 
 // Colores de la marca
@@ -145,6 +151,10 @@ export async function generarReportePDF(data: PdfReporteData): Promise<string> {
       ['Técnico Asignado', data.tecnico.nombre],
       ['Teléfono Técnico', data.tecnico.telefono || 'N/D'],
       ['Fecha de Creación', format(new Date(data.ticket.creado_en), "dd/MM/yyyy HH:mm", { locale: es })],
+      // Campos extendidos
+      ...(data.empresa ? [['Empresa / Cliente', data.empresa.nombre + (data.empresa.rfc ? ` (RFC: ${data.empresa.rfc})` : '')]] : []),
+      ...(data.sucursal ? [['Sucursal / Local', data.sucursal.nombre + (data.sucursal.direccion ? ` — ${data.sucursal.direccion}` : '')]] : []),
+      ...(data.supervisorCliente ? [['Supervisor del Cliente', data.supervisorCliente]] : []),
     ],
   })
 
@@ -224,6 +234,77 @@ export async function generarReportePDF(data: PdfReporteData): Promise<string> {
     const matLines = doc.splitTextToSize(data.reporte.materiales_usados, pageW - margin * 2)
     doc.text(matLines, margin, y)
     y += matLines.length * 5 + 6
+  }
+
+  // ── Sección: Equipos Atendidos ───────────────────────────────────────
+  if (data.equipos && data.equipos.length > 0) {
+    if (y + 30 > pageH - 30) { doc.addPage(); y = margin }
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(...BRAND.dark)
+    doc.text('Equipos Atendidos', margin, y)
+    y += 4
+    autoTable(doc, {
+      startY: y,
+      margin: { left: margin, right: margin },
+      theme: 'grid',
+      headStyles: { fillColor: BRAND.primary, textColor: BRAND.white, fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 9, textColor: BRAND.dark },
+      alternateRowStyles: { fillColor: BRAND.lightBg },
+      head: [['Equipo', 'Marca', 'Modelo']],
+      body: data.equipos.map(e => [e.nombre, e.marca || '—', e.modelo || '—']),
+    })
+    y = (doc as any).lastAutoTable.finalY + 10
+  }
+
+  // ── Sección: Galería de Fotos ───────────────────────────────────
+  if (data.fotos && data.fotos.length > 0) {
+    if (y + 60 > pageH - 30) { doc.addPage(); y = margin }
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(...BRAND.dark)
+    doc.text('Evidencia Fotográfica', margin, y)
+    y += 8
+
+    const imgW = (pageW - margin * 2 - 6) / 2
+    const imgH = 55
+    let col = 0
+    for (const foto of data.fotos) {
+      if (y + imgH + 20 > pageH - 20) { doc.addPage(); y = margin; col = 0 }
+      const x = margin + col * (imgW + 6)
+      try {
+        // Intentar cargar imagen desde URL base64 o URL externa
+        if (foto.url.startsWith('data:')) {
+          doc.addImage(foto.url, 'JPEG', x, y, imgW, imgH)
+        } else {
+          // Para URLs externas, crear placeholder con URL
+          doc.setFillColor(...BRAND.lightBg)
+          doc.roundedRect(x, y, imgW, imgH, 2, 2, 'F')
+          doc.setFontSize(7)
+          doc.setTextColor(...BRAND.gray)
+          doc.text('[Ver foto en: ' + foto.url.substring(0, 40) + '...]', x + imgW / 2, y + imgH / 2, { align: 'center' })
+        }
+      } catch (_) {
+        doc.setFillColor(...BRAND.lightBg)
+        doc.roundedRect(x, y, imgW, imgH, 2, 2, 'F')
+      }
+      // Descripción de la foto
+      if (foto.descripcion) {
+        doc.setFontSize(7.5)
+        doc.setFont('helvetica', 'italic')
+        doc.setTextColor(...BRAND.gray)
+        const descLines = doc.splitTextToSize(foto.descripcion, imgW)
+        doc.text(descLines, x + imgW / 2, y + imgH + 4, { align: 'center' })
+      }
+      col++
+      if (col >= 2) { col = 0; y += imgH + 16 }
+    }
+    if (col === 1) y += imgH + 16
+    y += 4
+  }
+  if (y + 55 > pageH - 30) {
+    doc.addPage()
+    y = margin
   }
 
   // ── Sección: Firma del Cliente ──────────────────────────────

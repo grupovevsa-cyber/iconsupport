@@ -36,6 +36,7 @@ export interface Ticket {
   cliente?: Profile;
   tecnico_asignado?: Profile;
   comentarios?: ComentarioTicket[];
+  tareas?: Tarea[];
 }
 
 // ── Formulario de creación de ticket ─────────────────────
@@ -70,6 +71,51 @@ export interface Asistencia {
   ticket?: Ticket;
 }
 
+// ── Empresa / Cliente ─────────────────────────────────────
+export interface Empresa {
+  id: string;
+  nombre: string;
+  rfc?: string;
+  direccion?: string;
+  telefono?: string;
+  creado_en: string;
+  actualizado_en: string;
+}
+
+// ── Sucursal / Local ──────────────────────────────────────
+export interface Sucursal {
+  id: string;
+  empresa_id: string;
+  nombre: string;
+  direccion?: string;
+  telefono?: string;
+  creado_en: string;
+  actualizado_en: string;
+  // Relación
+  empresa?: Empresa;
+}
+
+// ── Equipo ────────────────────────────────────────────────
+export interface Equipo {
+  id: string;
+  nombre: string;
+  marca?: string;
+  modelo?: string;
+  descripcion?: string;
+  creado_en: string;
+  actualizado_en: string;
+}
+
+// ── Imagen de reporte ─────────────────────────────────────
+export interface ImagenReporte {
+  id: string;
+  reporte_id: string;
+  url: string;
+  descripcion?: string;
+  orden: number;
+  creado_en: string;
+}
+
 // ── Reporte de visita ─────────────────────────────────────
 export interface VisitaReporte {
   id: string;
@@ -82,10 +128,18 @@ export interface VisitaReporte {
   firma_cliente_url?: string;
   pdf_reporte_url?: string;
   enviado_email: boolean;
+  // Campos extendidos
+  empresa_id?: string;
+  sucursal_id?: string;
+  supervisor_cliente?: string;
+  equipos_ids?: string[];
   creado_en: string;
   // Relaciones
   ticket?: Ticket;
   tecnico?: Profile;
+  empresa?: Empresa;
+  sucursal?: Sucursal;
+  imagenes?: ImagenReporte[];
 }
 
 // ── Comentario de ticket ──────────────────────────────────
@@ -119,4 +173,20 @@ export interface AuthUser {
   id: string;
   email: string;
   profile: Profile | null;
+}
+
+// ── Tareas de ticket ──────────────────────────────────────
+export type TareaEstado = 'abierta' | 'completada' | 'cerrada';
+
+export interface Tarea {
+  id: string;
+  ticket_id: string;
+  tecnico_id?: string;
+  titulo: string;
+  descripcion?: string;
+  estado: TareaEstado;
+  creado_en: string;
+  actualizado_en: string;
+  // Relaciones
+  tecnico?: Profile;
 }

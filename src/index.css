@@ -69,6 +69,12 @@
     @apply focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all;
   }
 
+  /* Input compacto para formularios de catálogos */
+  .field-input {
+    @apply bg-surface-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 w-full;
+    @apply focus:outline-none focus:ring-1 focus:ring-brand-500 transition-all;
+  }
+
   /* Botón primario */
   .btn-primary {
     @apply flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-500 disabled:bg-slate-700;

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LogIn, LogOut, History, FileText, TicketIcon, Loader2, ChevronRight } from 'lucide-react'
+import { LogIn, LogOut, History, FileText, TicketIcon, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { CheckInOut } from '../../components/CheckInOut'
-import { ReportePDF } from '../../components/ReportePDF'
 import { useAsistencias } from '../../hooks/useAsistencias'
 import { supabase } from '../../lib/supabaseClient'
 import type { Asistencia, Profile, Ticket } from '../../types'
@@ -23,10 +22,6 @@ export function AsistenciaPage({ tecnico }: AsistenciaPageProps) {
   const { historial, fetchHistorial, asistenciaActiva } = useAsistencias()
   const [ticketsAbiertos, setTicketsAbiertos] = useState<Ticket[]>([])
   const [ticketSeleccionado, setTicketSeleccionado] = useState<string | undefined>()
-  const [mostrarReporte, setMostrarReporte] = useState(false)
-  const [asistenciaReporte, setAsistenciaReporte] = useState<Asistencia | null>(null)
-  const [clienteReporte, setClienteReporte] = useState<Profile | null>(null)
-  const [ticketReporte, setTicketReporte] = useState<Ticket | null>(null)
   const [tab, setTab] = useState<'asistencia' | 'historial'>('asistencia')
 
   useEffect(() => {
@@ -41,22 +36,9 @@ export function AsistenciaPage({ tecnico }: AsistenciaPageProps) {
       .then(({ data }) => setTicketsAbiertos((data as Ticket[]) || []))
   }, [tecnico.id])
 
-  const handleIniciarReporte = async (asistencia: Asistencia) => {
-    // Cargar datos del ticket y cliente para el PDF
+  const handleIniciarReporte = (asistencia: Asistencia) => {
     if (!asistencia.ticket_id) return
-
-    const { data: ticket } = await supabase
-      .from('tickets')
-      .select('*, cliente:profiles!tickets_cliente_id_fkey(*)')
-      .eq('id', asistencia.ticket_id)
-      .single()
-
-    if (!ticket) return
-
-    setAsistenciaReporte(asistencia)
-    setTicketReporte(ticket as Ticket)
-    setClienteReporte((ticket as any).cliente as Profile)
-    setMostrarReporte(true)
+    navigate(`/tecnico/reporte/${asistencia.ticket_id}/${asistencia.id}`)
   }
 
   return (
@@ -212,36 +194,6 @@ export function AsistenciaPage({ tecnico }: AsistenciaPageProps) {
         </div>
       )}
 
-      {/* Modal: Reporte PDF */}
-      {mostrarReporte && ticketReporte && clienteReporte && (
-        <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm"
-          onClick={() => setMostrarReporte(false)}
-        >
-          <div
-            className="bg-surface-900 border border-slate-700 rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto animate-slide-up"
-            onClick={e => e.stopPropagation()}
-          >
-            <ReportePDF
-              ticket={ticketReporte}
-              tecnico={tecnico}
-              cliente={clienteReporte}
-              asistencia={asistenciaReporte || undefined}
-              onReporteCreado={(url) => {
-                setTimeout(() => setMostrarReporte(false), 2000)
-                fetchHistorial(tecnico.id)
-              }}
-            />
-            <button
-              id="btn-cerrar-reporte"
-              onClick={() => setMostrarReporte(false)}
-              className="w-full mt-4 py-2.5 bg-surface-800 hover:bg-surface-700 text-slate-400 text-sm rounded-xl border border-slate-700 transition-colors"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
