@@ -21,6 +21,7 @@ export interface Profile {
 // ── Ticket ────────────────────────────────────────────────
 export interface Ticket {
   id: string;
+  numero_ticket?: number;
   titulo: string;
   descripcion?: string;
   estado: TicketEstado;

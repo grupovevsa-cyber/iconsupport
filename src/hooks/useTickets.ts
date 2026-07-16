@@ -75,6 +75,12 @@ export function useTickets() {
       .single()
 
     if (updateErr) throw new Error(updateErr.message)
+    
+    // Notificar al admin sin bloquear el flujo principal
+    supabase.functions.invoke('notificar-admin', {
+      body: { ticket: updated }
+    }).catch(err => console.error('Error al notificar al admin:', err))
+
     return updated as Ticket
   }
 
@@ -87,6 +93,17 @@ export function useTickets() {
     const update: Partial<Ticket> = { estado }
     if (tecnicoId) update.tecnico_asignado_id = tecnicoId
 
+    const { error: err } = await supabase
+      .from('tickets')
+      .update(update)
+      .eq('id', ticketId)
+
+    if (err) throw new Error(err.message)
+    await fetchTickets()
+  }
+
+  /** Actualiza múltiples campos de un ticket */
+  const actualizarTicket = async (ticketId: string, update: Partial<Ticket>) => {
     const { error: err } = await supabase
       .from('tickets')
       .update(update)
@@ -145,6 +162,7 @@ export function useTickets() {
     fetchTickets,
     crearTicket,
     actualizarEstado,
+    actualizarTicket,
     asignarTecnico,
     getTicket,
     agregarComentario,

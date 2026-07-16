@@ -6,14 +6,15 @@ import {
 } from 'lucide-react'
 import { useTickets } from '../../hooks/useTickets'
 import { QRTicket } from '../../components/QRTicket'
-import type { NuevoTicketForm, Ticket } from '../../types'
+import type { NuevoTicketForm, Ticket, Profile } from '../../types'
+import { supabase } from '../../lib/supabaseClient'
 
 // ============================================================
-// Página: Nuevo Ticket (Cliente)
+// Página: Nuevo Ticket (Universal)
 // ============================================================
 
 interface NuevoTicketPageProps {
-  clienteId: string
+  clienteId?: string
 }
 
 export function NuevoTicketPage({ clienteId }: NuevoTicketPageProps) {
@@ -30,6 +31,17 @@ export function NuevoTicketPage({ clienteId }: NuevoTicketPageProps) {
   const [error, setError] = useState<string | null>(null)
   const [ticketCreado, setTicketCreado] = useState<Ticket | null>(null)
 
+  // ── Para Admins/Técnicos ──
+  const [clientes, setClientes] = useState<Profile[]>([])
+  const [selectedCliente, setSelectedCliente] = useState<string>(clienteId || '')
+
+  React.useEffect(() => {
+    if (!clienteId) {
+      supabase.from('profiles').select('*').eq('rol', 'cliente')
+        .then(({ data }) => setClientes(data || []))
+    }
+  }, [clienteId])
+
   const set = (k: keyof NuevoTicketForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
       setForm(f => ({ ...f, [k]: e.target.value }))
@@ -40,11 +52,15 @@ export function NuevoTicketPage({ clienteId }: NuevoTicketPageProps) {
       setError('El título y la descripción son obligatorios.')
       return
     }
+    if (!clienteId && !selectedCliente) {
+      setError('Debes seleccionar un cliente.')
+      return
+    }
 
     setCargando(true)
     setError(null)
     try {
-      const ticket = await crearTicket(form, clienteId)
+      const ticket = await crearTicket(form, clienteId || selectedCliente)
       setTicketCreado(ticket)
     } catch (err: any) {
       setError(err.message || 'Error al crear el ticket.')
@@ -71,8 +87,11 @@ export function NuevoTicketPage({ clienteId }: NuevoTicketPageProps) {
             <CheckCircle2 size={32} className="text-emerald-400" />
           </div>
           <h2 className="text-2xl font-bold text-white">¡Ticket Creado!</h2>
+          <p className="text-brand-400 mt-2 font-mono text-lg tracking-wider">
+            ID: TCK-{String(ticketCreado.numero_ticket || 0).padStart(5, '0')}
+          </p>
           <p className="text-slate-400 mt-1 text-sm">
-            Tu solicitud ha sido registrada exitosamente.
+            La solicitud ha sido registrada exitosamente.
           </p>
         </div>
 
@@ -108,13 +127,38 @@ export function NuevoTicketPage({ clienteId }: NuevoTicketPageProps) {
   return (
     <div className="max-w-xl mx-auto py-6 px-4 animate-fade-in">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Solicitar Soporte</h1>
+        <h1 className="text-2xl font-bold text-white">Nuevo Ticket de Soporte</h1>
         <p className="text-slate-400 text-sm mt-1">
-          Describe tu problema y nuestro equipo técnico lo atenderá a la brevedad.
+          Describe el problema para abrir un nuevo caso.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Selección de cliente si es Admin/Tecnico */}
+        {!clienteId && (
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5 flex items-center gap-1.5" htmlFor="ticket-cliente">
+              <Tag size={13} className="text-brand-400" />
+              Cliente asociado <span className="text-red-400">*</span>
+            </label>
+            <div className="relative">
+              <select
+                id="ticket-cliente"
+                required
+                value={selectedCliente}
+                onChange={(e) => setSelectedCliente(e.target.value)}
+                className="w-full bg-surface-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all appearance-none pr-9"
+              >
+                <option value="" disabled>-- Selecciona un cliente --</option>
+                {clientes.map(c => (
+                  <option key={c.id} value={c.id}>{c.nombre} ({c.email})</option>
+                ))}
+              </select>
+              <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            </div>
+          </div>
+        )}
+
         {/* Título */}
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-1.5 flex items-center gap-1.5" htmlFor="ticket-titulo">
