@@ -9,6 +9,7 @@ import { NuevoTicketPage } from './pages/cliente/NuevoTicketPage'
 import { SeguimientoPage } from './pages/cliente/SeguimientoPage'
 import { DashboardTecnicoPage } from './pages/tecnico/DashboardTecnicoPage'
 import { AsistenciaPage } from './pages/tecnico/AsistenciaPage'
+import { UsuariosPage } from './pages/admin/UsuariosPage'
 
 // ============================================================
 // ICON Support — App principal con routing
@@ -91,6 +92,10 @@ function AppWithLayout() {
         <Route
           path="/admin/dashboard"
           element={<DashboardTecnicoPage currentUser={profile} />}
+        />
+        <Route
+          path="/admin/usuarios"
+          element={<UsuariosPage />}
         />
 
         {/* Catch-all: redirigir al dashboard */}
