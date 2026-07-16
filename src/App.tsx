@@ -15,6 +15,7 @@ import { ChatBotPage } from './pages/admin/ChatBotPage'
 import { ConfiguracionPage } from './pages/admin/ConfiguracionPage'
 import { InformesPage } from './pages/shared/InformesPage'
 import { NuevaTareaPage } from './pages/admin/NuevaTareaPage'
+import { EjecucionTareaPage } from './pages/tecnico/EjecucionTareaPage'
 
 // ============================================================
 // ICON Support — App principal con routing
@@ -112,6 +113,12 @@ function AppWithLayout() {
         <Route
           path="/tecnico/reporte/:ticketId/:asistenciaId"
           element={<FormularioReportePage />}
+        />
+        
+        {/* Ejecución de Tarea */}
+        <Route
+          path="/tecnico/tarea/:id"
+          element={<EjecucionTareaPage />}
         />
 
         {/* Rutas de admin */}

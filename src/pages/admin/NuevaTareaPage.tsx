@@ -20,6 +20,7 @@ export function NuevaTareaPage() {
   const [descripcion, setDescripcion] = useState('')
   const [tecnicoId, setTecnicoId] = useState('')
   const [ticketId, setTicketId] = useState('')
+  const [prioridad, setPrioridad] = useState('baja')
 
   useEffect(() => {
     const init = async () => {
@@ -59,7 +60,8 @@ export function NuevaTareaPage() {
           descripcion: descripcion.trim() || null,
           tecnico_id: tecnicoId,
           ticket_id: ticketId || null,
-          estado: 'abierta'
+          estado: 'abierta',
+          prioridad: prioridad
         })
 
       if (error) throw error
@@ -127,6 +129,20 @@ export function NuevaTareaPage() {
           </select>
         </div>
 
+        {/* Prioridad */}
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">Prioridad</label>
+          <select
+            value={prioridad}
+            onChange={(e) => setPrioridad(e.target.value)}
+            className="w-full bg-surface-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-500"
+          >
+            <option value="baja">Baja</option>
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+          </select>
+        </div>
+
         {/* Descripción */}
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-2">Descripción (Opcional)</label>
@@ -148,7 +164,7 @@ export function NuevaTareaPage() {
           >
             <option value="">Ninguno (Tarea independiente)</option>
             {tickets.map(t => (
-              <option key={t.id} value={t.id}>Ticket #{t.numero_ticket || t.id.split('-')[0]} - {t.asunto}</option>
+              <option key={t.id} value={t.id}>#{t.id.substring(0, 8).toUpperCase()} - {t.titulo}</option>
             ))}
           </select>
         </div>

@@ -271,7 +271,7 @@ export function InformesPage({ currentUser }: InformesPageProps) {
                 <label className="block text-xs font-medium text-slate-400 mb-1">Técnico Asignado</label>
                 <select
                   value={editForm.tecnico_asignado_id || ''}
-                  onChange={(e) => setEditForm({ ...editForm, tecnico_asignado_id: e.target.value || null })}
+                  onChange={(e) => setEditForm({ ...editForm, tecnico_asignado_id: e.target.value || undefined })}
                   className="w-full bg-surface-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
                 >
                   <option value="">-- Sin asignar --</option>

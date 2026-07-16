@@ -110,7 +110,8 @@ export interface Equipo {
 // ── Imagen de reporte ─────────────────────────────────────
 export interface ImagenReporte {
   id: string;
-  reporte_id: string;
+  reporte_id?: string;
+  tarea_id?: string;
   url: string;
   descripcion?: string;
   orden: number;
@@ -186,6 +187,9 @@ export interface Tarea {
   titulo: string;
   descripcion?: string;
   estado: TareaEstado;
+  prioridad: string;
+  pdf_url?: string;
+  firma_supervisor?: string;
   creado_en: string;
   actualizado_en: string;
   // Relaciones

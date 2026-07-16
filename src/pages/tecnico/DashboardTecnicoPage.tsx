@@ -8,6 +8,7 @@ import { QRTicket } from '../../components/QRTicket'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { useTickets } from '../../hooks/useTickets'
+import { useTareas } from '../../hooks/useTareas'
 import { supabase } from '../../lib/supabaseClient'
 import type { Ticket, TicketEstado, Profile } from '../../types'
 
@@ -17,8 +18,11 @@ import type { Ticket, TicketEstado, Profile } from '../../types'
 
 const ESTADO_CONFIG = {
   abierto:    { label: 'Abierto',    color: 'text-red-400',    badge: 'bg-red-500/15 text-red-400 border-red-500/20' },
+  abierta:    { label: 'Abierta',    color: 'text-red-400',    badge: 'bg-red-500/15 text-red-400 border-red-500/20' },
   en_proceso: { label: 'En Proceso', color: 'text-amber-400',  badge: 'bg-amber-500/15 text-amber-400 border-amber-500/20' },
+  completada: { label: 'Completada', color: 'text-emerald-400', badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' },
   cerrado:    { label: 'Cerrado',    color: 'text-emerald-400', badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' },
+  cerrada:    { label: 'Cerrada',    color: 'text-emerald-400', badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20' },
 }
 
 const PRIORIDAD_DOT = {
@@ -38,6 +42,10 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
   const [busqueda, setBusqueda] = useState('')
   const [tecnicos, setTecnicos] = useState<Profile[]>([])
   const [ticketSeleccionado, setTicketSeleccionado] = useState<Ticket | null>(null)
+  
+  // Tareas
+  const { tareas, fetchTareas } = useTareas()
+  const [verTareas, setVerTareas] = useState(false)
 
   // Cargar tickets y técnicos
   useEffect(() => {
@@ -45,6 +53,7 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
       ? { tecnicoId: currentUser.id }
       : undefined
     fetchTickets(filtro)
+    fetchTareas(currentUser.rol === 'tecnico' ? currentUser.id : undefined)
   }, [currentUser])
 
   useEffect(() => {
@@ -145,7 +154,22 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
         </div>
       </div>
 
-      {/* Lista de tickets */}
+      <div className="flex items-center gap-4 border-b border-slate-800 pb-2">
+        <button
+          onClick={() => setVerTareas(false)}
+          className={`pb-2 text-sm font-medium transition-colors ${!verTareas ? 'text-brand-400 border-b-2 border-brand-400' : 'text-slate-500 hover:text-slate-300'}`}
+        >
+          Tickets ({ticketsFiltrados.length})
+        </button>
+        <button
+          onClick={() => setVerTareas(true)}
+          className={`pb-2 text-sm font-medium transition-colors ${verTareas ? 'text-brand-400 border-b-2 border-brand-400' : 'text-slate-500 hover:text-slate-300'}`}
+        >
+          Tareas Independientes ({tareas.length})
+        </button>
+      </div>
+
+      {/* Lista de tickets/tareas */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 size={32} className="animate-spin text-brand-400" />
@@ -153,10 +177,47 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
       ) : ticketsFiltrados.length === 0 ? (
         <div className="text-center py-16">
           <TicketIcon size={40} className="text-slate-700 mx-auto mb-3" />
-          <p className="text-slate-400 font-medium">No hay tickets {filtroEstado !== 'todos' ? `con estado "${filtroEstado}"` : ''}</p>
+          <p className="text-slate-400 font-medium">No hay elementos {filtroEstado !== 'todos' ? `con estado "${filtroEstado}"` : ''}</p>
           <p className="text-sm text-slate-600 mt-1">
-            {busqueda ? 'Intenta con otro término de búsqueda.' : 'Los nuevos tickets aparecerán aquí.'}
+            {busqueda ? 'Intenta con otro término de búsqueda.' : 'Los nuevos elementos aparecerán aquí.'}
           </p>
+        </div>
+      ) : verTareas ? (
+        <div className="space-y-3">
+          {tareas.map(tarea => {
+            const estadoCfg = ESTADO_CONFIG[tarea.estado] || ESTADO_CONFIG.abierto
+            return (
+              <div key={tarea.id} className="bg-surface-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 transition-all duration-200 hover:shadow-card animate-slide-up">
+                <div className="flex items-start gap-3">
+                  <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${PRIORIDAD_DOT[tarea.prioridad as keyof typeof PRIORIDAD_DOT] || PRIORIDAD_DOT.baja}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h3 className="font-semibold text-white text-sm leading-tight truncate">{tarea.titulo}</h3>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border shrink-0 ${estadoCfg.badge}`}>{estadoCfg.label}</span>
+                    </div>
+                    {tarea.descripcion && <p className="text-xs text-slate-500 mb-2 truncate">{tarea.descripcion}</p>}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                      <span className="flex items-center gap-1"><Timer size={11} /> {format(new Date(tarea.creado_en), "dd MMM, HH:mm", { locale: es })}</span>
+                      {tarea.ticket_id && <span className="text-brand-400">Atado al Ticket: {tarea.ticket_id.substring(0,8).toUpperCase()}</span>}
+                    </div>
+                    {/* Acciones */}
+                    <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-800">
+                      {tarea.estado !== 'completada' && (['tecnico', 'admin'] as string[]).includes(currentUser.rol) && (
+                        <button onClick={() => navigate(`/tecnico/tarea/${tarea.id}`)} className="flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors">
+                          <CheckCircle2 size={11} /> Completar Tarea
+                        </button>
+                      )}
+                      {tarea.pdf_url && (
+                        <a href={tarea.pdf_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors">
+                          <FileText size={11} /> Ver Certificado PDF
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
       ) : (
         <div className="space-y-3">
