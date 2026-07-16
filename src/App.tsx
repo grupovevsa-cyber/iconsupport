@@ -11,6 +11,8 @@ import { DashboardTecnicoPage } from './pages/tecnico/DashboardTecnicoPage'
 import { AsistenciaPage } from './pages/tecnico/AsistenciaPage'
 import { FormularioReportePage } from './pages/tecnico/FormularioReportePage'
 import { UsuariosPage } from './pages/admin/UsuariosPage'
+import { ChatBotPage } from './pages/admin/ChatBotPage'
+import { ConfiguracionPage } from './pages/admin/ConfiguracionPage'
 
 // ============================================================
 // ICON Support — App principal con routing
@@ -106,6 +108,14 @@ function AppWithLayout() {
         <Route
           path="/admin/usuarios"
           element={<UsuariosPage />}
+        />
+        <Route
+          path="/admin/chatbot"
+          element={<ChatBotPage />}
+        />
+        <Route
+          path="/admin/configuracion"
+          element={<ConfiguracionPage />}
         />
 
         {/* Catch-all: redirigir al dashboard */}

@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   TicketIcon, MapPin, Plus, Users,
-  LogOut, Zap, Menu, X, ChevronRight
+  LogOut, Zap, Menu, X, ChevronRight,
+  MessageCircle, Settings
 } from 'lucide-react'
 import type { Profile, UserRole } from '../../types'
 
@@ -32,9 +33,11 @@ const NAV_LINKS: Record<UserRole, NavItem[]> = {
     { to: '/tecnico/asistencia', icon: MapPin,     label: 'Control de Asistencia' },
   ],
   admin: [
-    { to: '/admin/dashboard',    icon: TicketIcon, label: 'Todos los Tickets' },
-    { to: '/tecnico/asistencia', icon: MapPin,     label: 'Asistencias' },
-    { to: '/admin/usuarios',     icon: Users,      label: 'Usuarios' },
+    { to: '/admin/dashboard',      icon: TicketIcon,      label: 'Todos los Tickets' },
+    { to: '/tecnico/asistencia',   icon: MapPin,          label: 'Asistencias' },
+    { to: '/admin/usuarios',       icon: Users,           label: 'Usuarios' },
+    { to: '/admin/chatbot',        icon: MessageCircle,   label: 'Bot WhatsApp' },
+    { to: '/admin/configuracion',  icon: Settings,        label: 'Configuración' },
   ],
 }
 
