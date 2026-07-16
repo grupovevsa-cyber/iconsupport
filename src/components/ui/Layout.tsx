@@ -27,18 +27,18 @@ const NAV_LINKS: Record<UserRole, NavItem[]> = {
   cliente: [
     { to: '/cliente/nuevo-ticket', icon: Plus,      label: 'Solicitar Soporte' },
     { to: '/cliente/tickets',      icon: TicketIcon, label: 'Mis Tickets' },
-    { to: '/cliente/informes',     icon: FileText,   label: 'Bitácora' },
+    { to: '/cliente/informes',     icon: FileText,   label: 'Informes' },
   ],
   tecnico: [
     { to: '/tecnico/nuevo-ticket', icon: Plus,       label: 'Crear Ticket' },
     { to: '/tecnico/dashboard',  icon: TicketIcon, label: 'Tickets Asignados' },
-    { to: '/tecnico/informes',   icon: FileText,   label: 'Bitácora' },
+    { to: '/tecnico/informes',   icon: FileText,   label: 'Informes' },
     { to: '/tecnico/asistencia', icon: MapPin,     label: 'Control de Asistencia' },
   ],
   admin: [
     { to: '/admin/nuevo-ticket',   icon: Plus,            label: 'Crear Ticket' },
     { to: '/admin/dashboard',      icon: TicketIcon,      label: 'Todos los Tickets' },
-    { to: '/admin/informes',       icon: FileText,        label: 'Informes y Bitácora' },
+    { to: '/admin/informes',       icon: FileText,        label: 'Informes' },
     { to: '/tecnico/asistencia',   icon: MapPin,          label: 'Asistencias' },
     { to: '/admin/usuarios',       icon: Users,           label: 'Usuarios' },
     { to: '/admin/chatbot',        icon: MessageCircle,   label: 'Bot WhatsApp' },
