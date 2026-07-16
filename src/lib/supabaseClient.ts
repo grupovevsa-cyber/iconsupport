@@ -39,7 +39,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 /** Sube un archivo al bucket especificado y retorna la URL pública */
 export async function uploadFile(
-  bucket: 'firmas' | 'reportes' | 'avatares',
+  bucket: 'firmas' | 'reportes' | 'avatares' | 'reportes_fotos',
   path: string,
   file: File | Blob,
   contentType: string
