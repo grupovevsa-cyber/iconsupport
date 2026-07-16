@@ -92,7 +92,7 @@ export function Layout({ children, currentUser, onSignOut }: LayoutProps) {
             className={({ isActive }: { isActive: boolean }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActive
-                  ? 'bg-brand-500/15 text-brand-300 border border-brand-500/20 shadow-glow/20'
+                  ? 'bg-brand-500/15 text-brand-300 border border-brand-500/20 shadow-glow'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-surface-800'
               }`
             }
