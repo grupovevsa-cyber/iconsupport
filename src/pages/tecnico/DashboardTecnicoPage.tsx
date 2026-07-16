@@ -37,10 +37,11 @@ interface DashboardTecnicoProps {
 
 export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
   const navigate = useNavigate()
-  const { tickets, loading, fetchTickets, actualizarEstado, asignarTecnico } = useTickets()
+  const { tickets, loading, fetchTickets, actualizarEstado, asignarTecnico, actualizarTicket } = useTickets()
   const [filtroEstado, setFiltroEstado] = useState<TicketEstado | 'todos'>('todos')
   const [busqueda, setBusqueda] = useState('')
   const [tecnicos, setTecnicos] = useState<Profile[]>([])
+  const [clientes, setClientes] = useState<Profile[]>([])
   const [ticketSeleccionado, setTicketSeleccionado] = useState<Ticket | null>(null)
   
   // Tareas
@@ -60,6 +61,8 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
     if (currentUser.rol === 'admin') {
       supabase.from('profiles').select('*').eq('rol', 'tecnico')
         .then(({ data }) => setTecnicos((data as Profile[]) || []))
+      supabase.from('profiles').select('*').eq('rol', 'cliente')
+        .then(({ data }) => setClientes((data as Profile[]) || []))
     }
   }, [currentUser.rol])
 
@@ -244,12 +247,17 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-                      {ticket.cliente && (
+                      {ticket.cliente ? (
                         <span className="flex items-center gap-1">
                           <Users size={11} />
                           {ticket.cliente.nombre}
                         </span>
-                      )}
+                      ) : (ticket.contacto_nombre ? (
+                        <span className="flex items-center gap-1 text-indigo-400 bg-indigo-500/10 px-2 rounded">
+                          <Users size={11} />
+                          {ticket.contacto_nombre} {ticket.contacto_empresa ? `(${ticket.contacto_empresa})` : ''} - Invitado
+                        </span>
+                      ) : null)}
                       <span className="capitalize">📁 {ticket.categoria || 'General'}</span>
                       <span className="flex items-center gap-1">
                         <Timer size={11} />
@@ -279,6 +287,25 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
                           </select>
                         )}
 
+                        {/* Asignar cliente */}
+                        {clientes.length > 0 && (
+                          <select
+                            id={`asignar-cliente-${ticket.id.substring(0, 8)}`}
+                            defaultValue={ticket.cliente_id || ''}
+                            onChange={async (e) => {
+                              if (e.target.value && actualizarTicket) {
+                                await actualizarTicket(ticket.id, { cliente_id: e.target.value })
+                              }
+                            }}
+                            className="bg-surface-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 appearance-none max-w-[140px] truncate"
+                          >
+                            <option value="">Asignar cliente...</option>
+                            {clientes.map(c => (
+                              <option key={c.id} value={c.id}>{c.nombre}</option>
+                            ))}
+                          </select>
+                        )}
+
                         {/* Cambiar estado */}
                         <select
                           id={`cambiar-estado-${ticket.id.substring(0, 8)}`}
@@ -300,6 +327,13 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
                         >
                           <Eye size={11} />
                           Ver QR
+                        </button>
+
+                        <button
+                          onClick={() => navigate(`/${currentUser.rol}/nueva-tarea?ticket_id=${ticket.id}`)}
+                          className="flex items-center gap-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+                        >
+                          + Tarea
                         </button>
 
                         {/* Botón Generar Reporte: disponible para técnico y admin en tickets no cerrados */}

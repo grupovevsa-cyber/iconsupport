@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, Save, ArrowLeft, Loader2, CheckCircle2, ClipboardList } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { supabase } from '../../lib/supabaseClient'
 import type { Profile, Ticket } from '../../types'
@@ -9,6 +9,7 @@ import { useAuth } from '../../hooks/useAuth'
 export function NuevaTareaPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
   
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
@@ -19,7 +20,7 @@ export function NuevaTareaPage() {
   const [titulo, setTitulo] = useState('')
   const [descripcion, setDescripcion] = useState('')
   const [tecnicoId, setTecnicoId] = useState('')
-  const [ticketId, setTicketId] = useState('')
+  const [ticketId, setTicketId] = useState(searchParams.get('ticket_id') || '')
   const [prioridad, setPrioridad] = useState('baja')
 
   useEffect(() => {

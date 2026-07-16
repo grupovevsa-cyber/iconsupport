@@ -46,42 +46,43 @@ export function useTickets() {
   /** Crea un nuevo ticket */
   const crearTicket = async (
     form: NuevoTicketForm,
-    clienteId: string
+    clienteId?: string
   ): Promise<Ticket> => {
     const appUrl = import.meta.env.VITE_APP_URL || window.location.origin
+    const ticketId = crypto.randomUUID()
+    const qrData = `${appUrl}/ticket/seguimiento/${ticketId}`
 
-    // Primero insertamos sin QR para obtener el ID
     const { data: inserted, error: insertErr } = await supabase
       .from('tickets')
       .insert({
         ...form,
-        cliente_id: clienteId,
+        id: ticketId,
+        cliente_id: clienteId || null,
         estado: 'abierto',
+        qr_code_data: qrData
       })
       .select()
-      .single()
 
     if (insertErr) throw new Error(insertErr.message)
 
-    const ticket = inserted as Ticket
-    const qrData = `${appUrl}/ticket/seguimiento/${ticket.id}`
-
-    // Actualizamos con la URL del QR
-    const { data: updated, error: updateErr } = await supabase
-      .from('tickets')
-      .update({ qr_code_data: qrData })
-      .eq('id', ticket.id)
-      .select()
-      .single()
-
-    if (updateErr) throw new Error(updateErr.message)
+    const updated = (inserted && inserted.length > 0) 
+      ? (inserted[0] as Ticket) 
+      : ({
+          ...form,
+          id: ticketId,
+          cliente_id: clienteId || null,
+          estado: 'abierto',
+          qr_code_data: qrData,
+          creado_en: new Date().toISOString(),
+          actualizado_en: new Date().toISOString(),
+        } as unknown as Ticket)
     
     // Notificar al admin sin bloquear el flujo principal
     supabase.functions.invoke('notificar-admin', {
       body: { ticket: updated }
     }).catch(err => console.error('Error al notificar al admin:', err))
 
-    return updated as Ticket
+    return updated
   }
 
   /** Actualiza el estado de un ticket */

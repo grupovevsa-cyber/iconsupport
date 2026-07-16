@@ -526,7 +526,56 @@ export function ConfiguracionPage() {
             }, 'bienvenida')} />
         </ConfigCard>
 
-        {/* ══ 6. INSTRUCCIONES DE DESPLIEGUE ══════════════ */}
+        {/* ══ 6. PORTAL PÚBLICO ════════════════════════════ */}
+        <ConfigCard
+          title="Portal Público de Soporte"
+          subtitle="Enlace y código QR para que invitados soliciten soporte"
+          icon={<Globe size={16} className="text-indigo-400" />}
+          defaultOpen={true}
+        >
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            <div className="bg-surface-800 p-4 rounded-2xl flex items-center justify-center border border-slate-700">
+              <div className="bg-white p-3 rounded-xl">
+                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent((import.meta.env.VITE_APP_URL || window.location.origin) + '/solicitar-soporte')}`} alt="QR Portal" className="w-32 h-32" />
+              </div>
+            </div>
+            <div className="flex-1 space-y-4">
+              <p className="text-sm text-slate-300 leading-relaxed">
+                Comparte este código QR o el siguiente enlace con tus clientes para que puedan generar tickets de soporte técnico sin necesidad de iniciar sesión.
+              </p>
+              
+              <div className="bg-surface-800 border border-slate-700 rounded-xl p-3 flex flex-col gap-2">
+                <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Enlace del Portal</span>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-xs text-brand-400 font-mono bg-surface-900 py-2 px-3 rounded-lg overflow-x-auto whitespace-nowrap">
+                    {(import.meta.env.VITE_APP_URL || window.location.origin) + '/solicitar-soporte'}
+                  </code>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText((import.meta.env.VITE_APP_URL || window.location.origin) + '/solicitar-soporte')
+                      toast.success('Enlace copiado al portapapeles')
+                    }}
+                    className="p-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 rounded-lg transition-colors shrink-0"
+                    title="Copiar enlace"
+                  >
+                    <Copy size={16} />
+                  </button>
+                  <a
+                    href="/solicitar-soporte"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 rounded-lg transition-colors shrink-0"
+                    title="Abrir portal"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ConfigCard>
+
+        {/* ══ 7. INSTRUCCIONES DE DESPLIEGUE ══════════════ */}
         <ConfigCard
           title="Instrucciones de Activación"
           subtitle="Pasos para conectar el webhook con Meta"

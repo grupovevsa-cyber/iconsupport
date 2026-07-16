@@ -27,10 +27,14 @@ export interface Ticket {
   estado: TicketEstado;
   prioridad: TicketPrioridad;
   categoria?: string;
-  cliente_id: string;
+  cliente_id?: string;
   tecnico_asignado_id?: string;
   qr_code_data?: string;
   notas_internas?: string;
+  contacto_nombre?: string;
+  contacto_email?: string;
+  contacto_telefono?: string;
+  contacto_empresa?: string;
   creado_en: string;
   actualizado_en: string;
   // Relaciones (joins)

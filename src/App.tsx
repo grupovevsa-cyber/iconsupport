@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { PublicTicketPage } from './pages/public/PublicTicketPage'
 import { Loader2, Zap } from 'lucide-react'
 import { Toaster } from 'react-hot-toast'
 import { useAuth } from './hooks/useAuth'
@@ -188,6 +189,9 @@ export default function App() {
       <Routes>
         {/* Ruta pública: login */}
         <Route path="/login" element={<LoginPage />} />
+
+        {/* Ruta pública: formulario libre */}
+        <Route path="/solicitar-soporte" element={<PublicTicketPage />} />
 
         {/* Ruta pública: seguimiento de ticket vía QR */}
         <Route path="/ticket/seguimiento/:id" element={<SeguimientoPage />} />
