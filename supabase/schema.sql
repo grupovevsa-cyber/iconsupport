@@ -407,22 +407,20 @@ BEGIN
   -- Generar un nuevo ID de usuario
   new_user_id := gen_random_uuid();
 
-  -- Insertar en auth.users
+  -- Insertar en auth.users (omitiendo las columnas autogeneradas como confirmed_at)
   INSERT INTO auth.users (
     id,
     instance_id,
     email,
     encrypted_password,
     email_confirmed_at,
-    confirmed_at,
     raw_app_meta_data,
     raw_user_meta_data,
     aud,
     role,
     created_at,
     updated_at,
-    phone,
-    phone_confirmed_at
+    phone
   )
   VALUES (
     new_user_id,
@@ -430,15 +428,13 @@ BEGIN
     new_email,
     extensions.crypt(new_password, extensions.gen_salt('bf')),
     now(),
-    now(),
     '{"provider":"email","providers":["email"]}'::jsonb,
     json_build_object('nombre', new_nombre, 'rol', new_rol)::jsonb,
     'authenticated',
     'authenticated',
     now(),
     now(),
-    new_telefono,
-    CASE WHEN new_telefono IS NOT NULL THEN now() ELSE NULL END
+    new_telefono
   );
 
   -- Actualizar el teléfono en public.profiles ya que el trigger no lo mapea automáticamente
