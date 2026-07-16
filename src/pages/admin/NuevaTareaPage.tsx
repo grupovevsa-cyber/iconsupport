@@ -67,7 +67,8 @@ export function NuevaTareaPage() {
       if (error) throw error
 
       toast.success('Tarea asignada correctamente al técnico.')
-      navigate('/admin/dashboard') // O donde prefieras redirigir
+      const redirectPath = user?.profile?.rol === 'tecnico' ? '/tecnico/dashboard' : '/admin/dashboard'
+      navigate(redirectPath)
     } catch (err: any) {
       toast.error(err.message)
     } finally {
@@ -86,7 +87,7 @@ export function NuevaTareaPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
-        <Link to="/admin/dashboard" className="p-2 hover:bg-surface-800 rounded-full transition-colors">
+        <Link to={user?.profile?.rol === 'tecnico' ? '/tecnico/dashboard' : '/admin/dashboard'} className="p-2 hover:bg-surface-800 rounded-full transition-colors">
           <ArrowLeft className="text-slate-400" />
         </Link>
         <div>

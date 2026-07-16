@@ -31,6 +31,7 @@ const NAV_LINKS: Record<UserRole, NavItem[]> = {
   ],
   tecnico: [
     { to: '/tecnico/nuevo-ticket', icon: Plus,       label: 'Crear Ticket' },
+    { to: '/tecnico/nueva-tarea',  icon: ClipboardList, label: 'Crear Tarea' },
     { to: '/tecnico/dashboard',  icon: TicketIcon, label: 'Tickets Asignados' },
     { to: '/tecnico/informes',   icon: FileText,   label: 'Informes' },
     { to: '/tecnico/asistencia', icon: MapPin,     label: 'Control de Asistencia' },

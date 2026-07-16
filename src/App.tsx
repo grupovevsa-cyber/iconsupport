@@ -94,6 +94,10 @@ function AppWithLayout() {
           element={<NuevoTicketPage />}
         />
         <Route
+          path="/tecnico/nueva-tarea"
+          element={<NuevaTareaPage />}
+        />
+        <Route
           path="/tecnico/dashboard"
           element={<DashboardTecnicoPage currentUser={profile} />}
         />
