@@ -31,12 +31,14 @@ export function LoginPage() {
         setModo('login')
       }
     } catch (err: any) {
+      const msg = err?.message || ''
       const msgs: Record<string, string> = {
         'Invalid login credentials': 'Email o contraseña incorrectos.',
         'Email not confirmed': 'Confirma tu email antes de ingresar.',
         'User already registered': 'Ya existe una cuenta con este email.',
+        'Failed to fetch': 'Error de conexión. Verifica tu internet o los servidores.',
       }
-      setError(msgs[err.message] || err.message)
+      setError(msgs[msg] || msg || (typeof err === 'object' ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : String(err)))
     } finally {
       setCargando(false)
     }
