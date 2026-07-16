@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   ICON Support — Estilos globales
+   ============================================================ */
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-surface-950 text-slate-100;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Scrollbar personalizada */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-900;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-600;
+  }
+
+  /* Selección de texto */
+  ::selection {
+    @apply bg-brand-500/40 text-white;
+  }
+}
+
+@layer components {
+  /* Fondo con patrón hero */
+  .hero-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Glassmorphism card */
+  .glass-card {
+    @apply bg-surface-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl;
+  }
+
+  /* Input base */
+  .input-base {
+    @apply w-full bg-surface-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600;
+    @apply focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all;
+  }
+
+  /* Botón primario */
+  .btn-primary {
+    @apply flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-500 disabled:bg-slate-700;
+    @apply disabled:cursor-not-allowed text-white font-semibold py-3 px-5 rounded-xl;
+    @apply transition-all duration-200 shadow-glow/30 hover:shadow-glow text-sm;
+  }
+
+  /* Badge de estado */
+  .badge-abierto    { @apply bg-red-500/15 text-red-400 border border-red-500/20; }
+  .badge-en_proceso { @apply bg-amber-500/15 text-amber-400 border border-amber-500/20; }
+  .badge-cerrado    { @apply bg-emerald-500/15 text-emerald-400 border border-emerald-500/20; }
+}
+
+@layer utilities {
+  /* Ocultar la flecha de los select en Chrome/Safari */
+  .appearance-none { appearance: none; }
+
+  /* Animación de brillo para elementos activos */
+  .glow-ring {
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4);
+  }
+}
+
+/* Leaflet: corrección de z-index para modales */
+.leaflet-container {
+  z-index: 0 !important;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Fix para el canvas de firma en móvil */
+canvas {
+  touch-action: none;
+}

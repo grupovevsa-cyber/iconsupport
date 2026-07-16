@@ -1,0 +1,152 @@
+import { useState, useCallback } from 'react'
+import { supabase } from '../lib/supabaseClient'
+import type { Ticket, NuevoTicketForm, TicketEstado } from '../types'
+
+// ============================================================
+// Hook: useTickets — CRUD de tickets
+// ============================================================
+
+export function useTickets() {
+  const [tickets, setTickets] = useState<Ticket[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  /** Carga tickets con filtros opcionales */
+  const fetchTickets = useCallback(async (filtros?: {
+    estado?: TicketEstado
+    clienteId?: string
+    tecnicoId?: string
+  }) => {
+    setLoading(true)
+    setError(null)
+
+    let query = supabase
+      .from('tickets')
+      .select(`
+        *,
+        cliente:profiles!tickets_cliente_id_fkey(id, nombre, email, telefono, rol),
+        tecnico_asignado:profiles!tickets_tecnico_asignado_id_fkey(id, nombre, email, telefono, rol)
+      `)
+      .order('creado_en', { ascending: false })
+
+    if (filtros?.estado) query = query.eq('estado', filtros.estado)
+    if (filtros?.clienteId) query = query.eq('cliente_id', filtros.clienteId)
+    if (filtros?.tecnicoId) query = query.eq('tecnico_asignado_id', filtros.tecnicoId)
+
+    const { data, error: err } = await query
+
+    if (err) {
+      setError(err.message)
+    } else {
+      setTickets((data as Ticket[]) || [])
+    }
+    setLoading(false)
+  }, [])
+
+  /** Crea un nuevo ticket */
+  const crearTicket = async (
+    form: NuevoTicketForm,
+    clienteId: string
+  ): Promise<Ticket> => {
+    const appUrl = import.meta.env.VITE_APP_URL || window.location.origin
+
+    // Primero insertamos sin QR para obtener el ID
+    const { data: inserted, error: insertErr } = await supabase
+      .from('tickets')
+      .insert({
+        ...form,
+        cliente_id: clienteId,
+        estado: 'abierto',
+      })
+      .select()
+      .single()
+
+    if (insertErr) throw new Error(insertErr.message)
+
+    const ticket = inserted as Ticket
+    const qrData = `${appUrl}/ticket/seguimiento/${ticket.id}`
+
+    // Actualizamos con la URL del QR
+    const { data: updated, error: updateErr } = await supabase
+      .from('tickets')
+      .update({ qr_code_data: qrData })
+      .eq('id', ticket.id)
+      .select()
+      .single()
+
+    if (updateErr) throw new Error(updateErr.message)
+    return updated as Ticket
+  }
+
+  /** Actualiza el estado de un ticket */
+  const actualizarEstado = async (
+    ticketId: string,
+    estado: TicketEstado,
+    tecnicoId?: string
+  ) => {
+    const update: Partial<Ticket> = { estado }
+    if (tecnicoId) update.tecnico_asignado_id = tecnicoId
+
+    const { error: err } = await supabase
+      .from('tickets')
+      .update(update)
+      .eq('id', ticketId)
+
+    if (err) throw new Error(err.message)
+    await fetchTickets()
+  }
+
+  /** Asigna un técnico a un ticket */
+  const asignarTecnico = async (ticketId: string, tecnicoId: string) => {
+    const { error: err } = await supabase
+      .from('tickets')
+      .update({ tecnico_asignado_id: tecnicoId, estado: 'en_proceso' })
+      .eq('id', ticketId)
+
+    if (err) throw new Error(err.message)
+    await fetchTickets()
+  }
+
+  /** Obtiene un ticket por ID con todas sus relaciones */
+  const getTicket = async (id: string): Promise<Ticket | null> => {
+    const { data, error: err } = await supabase
+      .from('tickets')
+      .select(`
+        *,
+        cliente:profiles!tickets_cliente_id_fkey(*),
+        tecnico_asignado:profiles!tickets_tecnico_asignado_id_fkey(*),
+        comentarios:comentarios_tickets(*, autor:profiles(*))
+      `)
+      .eq('id', id)
+      .single()
+
+    if (err) return null
+    return data as Ticket
+  }
+
+  /** Agrega un comentario a un ticket */
+  const agregarComentario = async (
+    ticketId: string,
+    autorId: string,
+    mensaje: string,
+    esInterno: boolean = false
+  ) => {
+    const { error: err } = await supabase
+      .from('comentarios_tickets')
+      .insert({ ticket_id: ticketId, autor_id: autorId, mensaje, es_interno: esInterno })
+
+    if (err) throw new Error(err.message)
+  }
+
+  return {
+    tickets,
+    loading,
+    error,
+    fetchTickets,
+    crearTicket,
+    actualizarEstado,
+    asignarTecnico,
+    getTicket,
+    agregarComentario,
+  }
+}
