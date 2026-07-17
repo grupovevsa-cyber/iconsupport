@@ -183,8 +183,18 @@ export function LoginPage() {
               {cargando ? (
                 <><Loader2 size={18} className="animate-spin" /> Procesando...</>
               ) : modo === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
-            </button>
           </form>
+
+          {modo === 'login' && (
+            <div className="mt-6 pt-5 border-t border-slate-800 text-center">
+              <a
+                href="/solicitar-soporte"
+                className="inline-flex items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 font-semibold transition-colors"
+              >
+                ¿No tienes cuenta? Solicitar soporte como invitado →
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Features */}
