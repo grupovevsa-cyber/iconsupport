@@ -16,6 +16,7 @@ export function useTickets() {
     estado?: TicketEstado
     clienteId?: string
     tecnicoId?: string
+    incluirSinAsignar?: boolean
   }) => {
     setLoading(true)
     setError(null)
@@ -25,13 +26,20 @@ export function useTickets() {
       .select(`
         *,
         cliente:profiles!tickets_cliente_id_fkey(id, nombre, email, telefono, rol),
-        tecnico_asignado:profiles!tickets_tecnico_asignado_id_fkey(id, nombre, email, telefono, rol)
+        tecnico_asignado:profiles!tickets_tecnico_asignado_id_fkey(id, nombre, email, telefono, rol),
+        tareas(*)
       `)
       .order('creado_en', { ascending: false })
 
     if (filtros?.estado) query = query.eq('estado', filtros.estado)
     if (filtros?.clienteId) query = query.eq('cliente_id', filtros.clienteId)
-    if (filtros?.tecnicoId) query = query.eq('tecnico_asignado_id', filtros.tecnicoId)
+    if (filtros?.tecnicoId) {
+      if (filtros?.incluirSinAsignar) {
+        query = query.or(`tecnico_asignado_id.eq.${filtros.tecnicoId},tecnico_asignado_id.is.null`)
+      } else {
+        query = query.eq('tecnico_asignado_id', filtros.tecnicoId)
+      }
+    }
 
     const { data, error: err } = await query
 

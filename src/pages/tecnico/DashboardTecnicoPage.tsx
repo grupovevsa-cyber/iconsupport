@@ -54,7 +54,7 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
   // Cargar tickets y técnicos
   useEffect(() => {
     const filtro = currentUser.rol === 'tecnico'
-      ? { tecnicoId: currentUser.id }
+      ? { tecnicoId: currentUser.id, incluirSinAsignar: true }
       : undefined
     fetchTickets(filtro)
     fetchTareas(currentUser.rol === 'tecnico' ? currentUser.id : undefined)
@@ -279,87 +279,141 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
                       </span>
                     </div>
 
-                    {/* Acciones rápidas (solo Admin) */}
-                    {currentUser.rol === 'admin' && ticket.estado !== 'cerrado' && (
+                    {/* Lista de Tareas del Ticket */}
+                    {ticket.tareas && ticket.tareas.length > 0 && (
+                      <div className="mt-3 p-3 bg-surface-950/40 border border-slate-800 rounded-xl space-y-2">
+                        <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Tareas asociadas ({ticket.tareas.length})</span>
+                        <div className="space-y-1.5">
+                          {ticket.tareas.map(tarea => {
+                            const completada = tarea.estado === 'completada'
+                            return (
+                              <div key={tarea.id} className="flex items-center justify-between gap-2 py-1 border-b border-slate-800/30 last:border-b-0">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${completada ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                                  <span className={`text-xs truncate ${completada ? 'text-slate-500 line-through' : 'text-slate-300'}`}>
+                                    {tarea.titulo}
+                                  </span>
+                                </div>
+                                
+                                {completada ? (
+                                  <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full">Completada</span>
+                                ) : (
+                                  <button
+                                    onClick={() => navigate(`/tecnico/tarea/${tarea.id}`)}
+                                    className="text-[10px] text-brand-400 hover:text-brand-300 font-semibold bg-brand-500/10 hover:bg-brand-500/20 px-2.5 py-1 rounded-full transition-colors"
+                                  >
+                                    Realizar →
+                                  </button>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Acciones rápidas (Admin y Técnico) */}
+                    {ticket.estado !== 'cerrado' && (
                       <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-800">
-                        {/* Asignar técnico */}
-                        {tecnicos.length > 0 && (
-                          <select
-                            id={`asignar-tecnico-${ticket.id.substring(0, 8)}`}
-                            defaultValue={ticket.tecnico_asignado_id || ''}
-                            onChange={async (e) => {
-                              if (e.target.value) {
-                                await asignarTecnico(ticket.id, e.target.value)
-                              }
-                            }}
-                            className="bg-surface-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 appearance-none"
-                          >
-                            <option value="">Asignar técnico...</option>
-                            {tecnicos.map(t => (
-                              <option key={t.id} value={t.id}>{t.nombre}</option>
-                            ))}
-                          </select>
+                        {/* ── Acciones de ADMIN ── */}
+                        {currentUser.rol === 'admin' && (
+                          <>
+                            {/* Asignar técnico */}
+                            {tecnicos.length > 0 && (
+                              <select
+                                id={`asignar-tecnico-${ticket.id.substring(0, 8)}`}
+                                defaultValue={ticket.tecnico_asignado_id || ''}
+                                onChange={async (e) => {
+                                  if (e.target.value) {
+                                    await asignarTecnico(ticket.id, e.target.value)
+                                  }
+                                }}
+                                className="bg-surface-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 appearance-none"
+                              >
+                                <option value="">Asignar técnico...</option>
+                                {tecnicos.map(t => (
+                                  <option key={t.id} value={t.id}>{t.nombre}</option>
+                                ))}
+                              </select>
+                            )}
+
+                            {/* Asignar cliente */}
+                            {clientes.length > 0 && (
+                              <select
+                                id={`asignar-cliente-${ticket.id.substring(0, 8)}`}
+                                defaultValue={ticket.cliente_id || ''}
+                                onChange={async (e) => {
+                                  if (e.target.value && actualizarTicket) {
+                                    await actualizarTicket(ticket.id, { cliente_id: e.target.value })
+                                  }
+                                }}
+                                className="bg-surface-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 appearance-none max-w-[140px] truncate"
+                              >
+                                <option value="">Asignar cliente...</option>
+                                {clientes.map(c => (
+                                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                                ))}
+                              </select>
+                            )}
+                          </>
                         )}
 
-                        {/* Asignar cliente */}
-                        {clientes.length > 0 && (
-                          <select
-                            id={`asignar-cliente-${ticket.id.substring(0, 8)}`}
-                            defaultValue={ticket.cliente_id || ''}
-                            onChange={async (e) => {
-                              if (e.target.value && actualizarTicket) {
-                                await actualizarTicket(ticket.id, { cliente_id: e.target.value })
-                              }
-                            }}
-                            className="bg-surface-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 appearance-none max-w-[140px] truncate"
-                          >
-                            <option value="">Asignar cliente...</option>
-                            {clientes.map(c => (
-                              <option key={c.id} value={c.id}>{c.nombre}</option>
-                            ))}
-                          </select>
-                        )}
-
-                        {/* Cambiar estado */}
-                        <select
-                          id={`cambiar-estado-${ticket.id.substring(0, 8)}`}
-                          value={ticket.estado}
-                          onChange={async (e) => {
-                            await actualizarEstado(ticket.id, e.target.value as TicketEstado)
-                          }}
-                          className="bg-surface-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 appearance-none"
-                        >
-                          <option value="abierto">Abierto</option>
-                          <option value="en_proceso">En Proceso</option>
-                          <option value="cerrado">Cerrado</option>
-                        </select>
-
-                        <button
-                          id={`ver-ticket-${ticket.id.substring(0, 8)}`}
-                          onClick={() => setTicketSeleccionado(ticket)}
-                          className="flex items-center gap-1.5 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
-                        >
-                          <Eye size={11} />
-                          Ver QR
-                        </button>
-
-                        <button
-                          onClick={() => navigate(`/${currentUser.rol}/nueva-tarea?ticket_id=${ticket.id}`)}
-                          className="flex items-center gap-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
-                        >
-                          + Tarea
-                        </button>
-
-                        {/* Botón Generar Reporte: disponible para técnico y admin en tickets no cerrados */}
-                        {(ticket.estado as string) !== 'cerrado' && (['tecnico', 'admin'] as string[]).includes(currentUser.rol) && (
+                        {/* ── Acciones de TÉCNICO sin asignar (Tomar Ticket) ── */}
+                        {currentUser.rol === 'tecnico' && !ticket.tecnico_asignado_id && (
                           <button
-                            id={`generar-reporte-${ticket.id.substring(0, 8)}`}
-                            onClick={() => navigate(`/tecnico/reporte/${ticket.id}`)}
-                            className="flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+                            onClick={async () => {
+                              await asignarTecnico(ticket.id, currentUser.id)
+                              toast.success('Ticket asignado correctamente.')
+                            }}
+                            className="bg-brand-600 hover:bg-brand-500 text-white rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
                           >
-                            <FileText size={11} />
-                            Reporte
+                            🙋‍♂️ Tomar Ticket
                           </button>
+                        )}
+
+                        {/* ── Acciones compartidas (Admin, o Técnico asignado) ── */}
+                        {(currentUser.rol === 'admin' || (currentUser.rol === 'tecnico' && ticket.tecnico_asignado_id === currentUser.id)) && (
+                          <>
+                            {/* Cambiar estado */}
+                            <select
+                              id={`cambiar-estado-${ticket.id.substring(0, 8)}`}
+                              value={ticket.estado}
+                              onChange={async (e) => {
+                                await actualizarEstado(ticket.id, e.target.value as TicketEstado)
+                              }}
+                              className="bg-surface-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-brand-500 appearance-none"
+                            >
+                              <option value="abierto">Abierto</option>
+                              <option value="en_proceso">En Proceso</option>
+                              <option value="cerrado">Cerrado</option>
+                            </select>
+
+                            <button
+                              id={`ver-ticket-${ticket.id.substring(0, 8)}`}
+                              onClick={() => setTicketSeleccionado(ticket)}
+                              className="flex items-center gap-1.5 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+                            >
+                              <Eye size={11} />
+                              Ver QR
+                            </button>
+
+                            <button
+                              onClick={() => navigate(`/${currentUser.rol}/nueva-tarea?ticket_id=${ticket.id}`)}
+                              className="flex items-center gap-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+                            >
+                              + Tarea
+                            </button>
+
+                            {/* Generar Reporte */}
+                            <button
+                              id={`generar-reporte-${ticket.id.substring(0, 8)}`}
+                              onClick={() => navigate(`/tecnico/reporte/${ticket.id}`)}
+                              className="flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+                            >
+                              <FileText size={11} />
+                              Reporte
+                            </button>
+                          </>
                         )}
                       </div>
                     )}
