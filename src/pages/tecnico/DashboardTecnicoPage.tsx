@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   TicketIcon, Filter, Search, ChevronDown,
-  AlertCircle, Timer, CheckCircle2, Loader2, Eye, Users, FileText
+  AlertCircle, Timer, CheckCircle2, Loader2, Eye, Users, FileText,
+  Globe, Copy, ExternalLink, X
 } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 import { QRTicket } from '../../components/QRTicket'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -47,6 +49,7 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
   // Tareas
   const { tareas, fetchTareas } = useTareas()
   const [verTareas, setVerTareas] = useState(false)
+  const [mostrarPortalQR, setMostrarPortalQR] = useState(false)
 
   // Cargar tickets y técnicos
   useEffect(() => {
@@ -93,13 +96,24 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">
-          {currentUser.rol === 'admin' ? 'Panel de Administración' : 'Mis Tickets Asignados'}
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">
-          Bienvenido, <span className="text-brand-400 font-medium">{currentUser.nombre}</span>
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white">
+            {currentUser.rol === 'admin' ? 'Panel de Administración' : 'Mis Tickets Asignados'}
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            Bienvenido, <span className="text-brand-400 font-medium">{currentUser.nombre}</span>
+          </p>
+        </div>
+        {currentUser.rol === 'admin' && (
+          <button
+            onClick={() => setMostrarPortalQR(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-glow shadow-indigo-600/20 self-start"
+          >
+            <Globe size={15} />
+            Compartir Portal QR
+          </button>
+        )}
       </div>
 
       {/* Stats */}
@@ -380,6 +394,78 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
               id="btn-cerrar-modal-qr"
               onClick={() => setTicketSeleccionado(null)}
               className="w-full mt-5 py-2.5 bg-surface-800 hover:bg-surface-700 text-slate-300 text-sm font-medium rounded-xl border border-slate-700 transition-colors"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Portal QR Público (Admin) */}
+      {mostrarPortalQR && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={() => setMostrarPortalQR(false)}
+        >
+          <div
+            className="bg-surface-900 border border-slate-700 rounded-3xl p-6 w-full max-w-md animate-slide-up"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-white text-base">Portal Público de Soporte</h3>
+              <button
+                onClick={() => setMostrarPortalQR(false)}
+                className="p-1 text-slate-500 hover:text-white rounded-lg transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+              Comparte este código QR o enlace con tus clientes para que puedan registrar tickets de soporte técnico libremente sin necesidad de iniciar sesión.
+            </p>
+
+            <div className="flex flex-col items-center gap-5">
+              <div className="bg-white p-3 rounded-2xl border border-slate-700">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent((import.meta.env.VITE_APP_URL || window.location.origin) + '/solicitar-soporte')}`}
+                  alt="QR Portal Público"
+                  className="w-36 h-36"
+                />
+              </div>
+
+              <div className="w-full bg-surface-800 border border-slate-700 rounded-xl p-3 flex flex-col gap-2">
+                <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Enlace de acceso libre</span>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-[11px] text-brand-400 font-mono bg-surface-900 py-1.5 px-2.5 rounded-lg overflow-x-auto whitespace-nowrap">
+                    {(import.meta.env.VITE_APP_URL || window.location.origin) + '/solicitar-soporte'}
+                  </code>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText((import.meta.env.VITE_APP_URL || window.location.origin) + '/solicitar-soporte')
+                      toast.success('Enlace copiado al portapapeles')
+                    }}
+                    className="p-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 rounded-lg transition-colors shrink-0"
+                    title="Copiar enlace"
+                  >
+                    <Copy size={14} />
+                  </button>
+                  <a
+                    href="/solicitar-soporte"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 rounded-lg transition-colors shrink-0"
+                    title="Abrir portal"
+                  >
+                    <ExternalLink size={14} />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setMostrarPortalQR(false)}
+              className="w-full mt-6 py-2.5 bg-surface-800 hover:bg-surface-700 text-slate-300 text-sm font-medium rounded-xl border border-slate-700 transition-colors"
             >
               Cerrar
             </button>

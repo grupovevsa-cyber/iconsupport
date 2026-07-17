@@ -113,7 +113,7 @@ function FieldInput({
 }
 
 function ConfigCard({
-  title, subtitle, icon, badge, children, defaultOpen = true
+  title, subtitle, icon, badge, children, defaultOpen = false
 }: {
   title: string; subtitle?: string; icon: React.ReactNode
   badge?: { label: string; color: string }
