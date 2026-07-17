@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Manual del Administrador - ICON Support</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    @media print {
+      .no-print { display: none; }
+      body { background: white; color: black; }
+      .page-break { page-break-after: always; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+  <!-- Portada -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm] flex flex-col justify-between page-break">
+    <div>
+      <div class="flex items-center gap-3 mb-16">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl">⚡</div>
+        <div>
+          <span class="text-sm font-bold tracking-wider text-slate-400">ABBA INNOVATION</span>
+          <h2 class="text-xs text-slate-500 font-mono">SOPORTE TÉCNICO</h2>
+        </div>
+      </div>
+      
+      <div class="mt-20">
+        <span class="text-xs font-bold uppercase tracking-widest text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Manual de Administrador</span>
+        <h1 class="text-5xl font-extrabold text-slate-900 mt-6 leading-tight">Manual de Configuración y Gestión de la Plataforma</h1>
+        <p class="text-lg text-slate-500 mt-4 max-w-xl leading-relaxed">
+          Guía integral para administradores de ICON Support. Cubre administración de tickets públicos, asignación de tareas, gestión de usuarios, parametrización del Chatbot de WhatsApp y claves API.
+        </p>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-100 pt-8 flex items-center justify-between text-xs text-slate-400">
+      <div>
+        <p class="font-semibold text-slate-700">ICON Support Platform</p>
+        <p>Versión 1.1 — Julio 2026</p>
+      </div>
+      <p class="text-right">ABBA Innovation S.A.</p>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm] page-break">
+    <h2 class="text-2xl font-bold text-slate-900 border-b pb-3 mb-6">Índice del Manual</h2>
+    <ol class="space-y-3 text-slate-600">
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>1. Dashboard Global e Indicadores de Gestión</span>
+        <span class="font-mono text-slate-400">Pág. 2</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>2. Administración de Tickets de Invitados (Públicos)</span>
+        <span class="font-mono text-slate-400">Pág. 2</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>3. Asignación de Tareas Vinculadas a Técnicos</span>
+        <span class="font-mono text-slate-400">Pág. 3</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>4. Control de Usuarios y Asignación de Roles</span>
+        <span class="font-mono text-slate-400">Pág. 3</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>5. Ajustes de la Plataforma, Credenciales e Integración WhatsApp</span>
+        <span class="font-mono text-slate-400">Pág. 4</span>
+      </li>
+    </ol>
+
+    <h3 class="text-xl font-bold text-slate-900 mt-12 mb-4">1. Dashboard Global e Indicadores de Gestión</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">
+      Al ingresar como administrador, tendrás una perspectiva completa de las operaciones técnicas del negocio. Las tarjetas superiores muestran el total de incidencias, desglosadas por estado actual (Abierto, En Proceso, Cerrado). 
+    </p>
+    <p class="text-slate-600 leading-relaxed">
+      A través del buscador y del selector de filtros, puedes rastrear cualquier ticket en cuestión de segundos, ya sea por el título del incidente, nombre del cliente o del técnico responsable de su resolución.
+    </p>
+
+    <h3 class="text-xl font-bold text-slate-900 mt-8 mb-4">2. Gestión de Tickets de Invitados (Públicos)</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">
+      El portal permite recibir solicitudes de usuarios que no tienen credenciales de acceso. Estos tickets especiales son reconocibles de inmediato por la etiqueta morada de <strong>"Invitado"</strong> en el panel de tickets.
+    </p>
+    <div class="bg-purple-50 border border-purple-100 rounded-2xl p-6">
+      <h4 class="font-bold text-purple-950 mb-2">🔄 Flujo de Vinculación de Clientes:</h4>
+      <p class="text-purple-900 text-sm leading-relaxed mb-3">
+        Dado que los invitados no poseen una cuenta formal, es deber del administrador asociar el ticket al cliente correspondiente una vez identificado el solicitante.
+      </p>
+      <ul class="list-disc pl-5 text-purple-950 text-xs space-y-1">
+        <li>Ubica la fila del ticket del invitado.</li>
+        <li>Haz clic en el desplegable <strong>"Asignar cliente..."</strong>.</li>
+        <li>Selecciona de la lista el cliente registrado al cual asociar el reporte de servicio.</li>
+        <li>El sistema guardará la relación automáticamente en tiempo real.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Página 3 -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm] page-break">
+    <h3 class="text-xl font-bold text-slate-900 mb-4">3. Asignación de Tareas a Técnicos</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">
+      Como administrador, puedes programar tareas específicas para tu personal técnico en campo. Existen dos formas de hacerlo:
+    </p>
+    <ul class="space-y-4 text-slate-600 list-none pl-0">
+      <li class="border-l-4 border-indigo-500 pl-4 py-1">
+        <strong>A. Tareas desde el Dashboard:</strong> Haciendo clic en el botón <strong>"+ Tarea"</strong> situado en el renglón de cualquier ticket. Esto abrirá la pantalla de creación con el ticket pre-seleccionado de forma automática.
+      </li>
+      <li class="border-l-4 border-indigo-500 pl-4 py-1">
+        <strong>B. Tareas Generales:</strong> A través del menú lateral "Asignar Tarea", lo que te permite crear una actividad sin necesidad de vincularla a un ticket (por ejemplo, mantenimiento preventivo de laboratorios).
+      </li>
+    </ul>
+
+    <h3 class="text-xl font-bold text-slate-900 mt-10 mb-4">4. Control de Usuarios y Asignación de Roles</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">
+      Desde la sección de <strong>"Usuarios"</strong>, tienes el control de las cuentas registradas en el sistema. Puedes crear cuentas manualmente o aprobar las solicitudes de registro que realicen tus colaboradores.
+    </p>
+
+    <div class="border border-slate-200 rounded-2xl overflow-hidden mb-6 text-sm">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200">
+            <th class="p-3 font-semibold text-slate-700">Rol de Cuenta</th>
+            <th class="p-3 font-semibold text-slate-700">Permisos Autorizados</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-600">
+          <tr>
+            <td class="p-3 font-medium text-slate-900">Cliente</td>
+            <td class="p-3">Solo puede levantar tickets de soporte, comentar en sus tickets y descargar sus reportes técnicos PDF de servicio firmados.</td>
+          </tr>
+          <tr>
+            <td class="p-3 font-medium text-slate-900">Técnico</td>
+            <td class="p-3">Ve sus tickets y tareas asignadas. Puede rellenar reportes de servicio, registrar su asistencia laboral, subir fotos y capturar firmas.</td>
+          </tr>
+          <tr>
+            <td class="p-3 font-medium text-slate-900">Admin</td>
+            <td class="p-3">Acceso total. Edición de configuraciones críticas, altas de usuarios, entrenamiento de Chatbot IA y asignaciones.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Página 4 -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm]">
+    <h3 class="text-xl font-bold text-slate-900 mb-4">5. Ajustes de la Plataforma, Credenciales e Integraciones</h3>
+    <p class="text-slate-600 leading-relaxed mb-6">
+      El panel de <strong>Configuración</strong> y el del <strong>Bot WhatsApp</strong> permiten personalizar el motor inteligente y las conexiones API del sistema:
+    </p>
+
+    <div class="space-y-6">
+      <div class="border border-slate-100 rounded-2xl p-6 bg-slate-50">
+        <h4 class="font-bold text-slate-900 text-base mb-2">🤖 Parametrización del Chatbot de WhatsApp (IA)</h4>
+        <p class="text-slate-600 text-xs leading-relaxed mb-3">
+          El chatbot interactúa de forma autónoma con los clientes a través de la API oficial de Meta y el modelo de lenguaje de Gemini AI.
+        </p>
+        <ul class="list-disc pl-5 text-slate-500 text-xs space-y-1">
+          <li><strong>Modo IA Activo:</strong> Habilita o deshabilita la inteligencia del bot al instante.</li>
+          <li><strong>System Prompt (Instrucción de Sistema):</strong> Define las directrices de personalidad del bot (cómo responder a los clientes, horarios de soporte técnico, directivas de cordialidad).</li>
+        </ul>
+      </div>
+
+      <div class="border border-slate-100 rounded-2xl p-6 bg-slate-50">
+        <h4 class="font-bold text-slate-900 text-base mb-2">🔑 Gestión de API y Credenciales del Sistema</h4>
+        <p class="text-slate-600 text-xs leading-relaxed mb-3">
+          Para garantizar la continuidad operativa de las notificaciones e integraciones, verifica el estado de las claves:
+        </p>
+        <ul class="list-disc pl-5 text-slate-500 text-xs space-y-1">
+          <li><strong>Token de WhatsApp y Phone ID:</strong> Claves de Meta Developer para recibir y enviar mensajes por WhatsApp.</li>
+          <li><strong>Gemini API Key:</strong> Clave de Google AI para el procesamiento inteligente de chats.</li>
+          <li><strong>Resend API Key:</strong> Clave para el envío automático por correo electrónico de las Hojas de Servicio Técnicas en formato PDF.</li>
+          <li><strong>Identidad corporativa:</strong> Carga el logotipo de tu empresa y el nombre del sistema que aparecerá impreso en la cabecera de los reportes PDF.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

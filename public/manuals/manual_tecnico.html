@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Manual del Personal Técnico - ICON Support</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    @media print {
+      .no-print { display: none; }
+      body { background: white; color: black; }
+      .page-break { page-break-after: always; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+  <!-- Portada -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm] flex flex-col justify-between page-break">
+    <div>
+      <div class="flex items-center gap-3 mb-16">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl">⚡</div>
+        <div>
+          <span class="text-sm font-bold tracking-wider text-slate-400">ABBA INNOVATION</span>
+          <h2 class="text-xs text-slate-500 font-mono">SOPORTE TÉCNICO</h2>
+        </div>
+      </div>
+      
+      <div class="mt-20">
+        <span class="text-xs font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-full">Manual Técnico</span>
+        <h1 class="text-5xl font-extrabold text-slate-900 mt-6 leading-tight">Guía Operativa para Personal Técnico</h1>
+        <p class="text-lg text-slate-500 mt-4 max-w-xl leading-relaxed">
+          Instrucciones para el control de asistencia, ejecución de tareas, generación de reportes técnicos digitales, capturas de firmas e imágenes de soporte.
+        </p>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-100 pt-8 flex items-center justify-between text-xs text-slate-400">
+      <div>
+        <p class="font-semibold text-slate-700">ICON Support Platform</p>
+        <p>Versión 1.1 — Julio 2026</p>
+      </div>
+      <p class="text-right">ABBA Innovation S.A.</p>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm] page-break">
+    <h2 class="text-2xl font-bold text-slate-900 border-b pb-3 mb-6">Índice del Manual</h2>
+    <ol class="space-y-3 text-slate-600">
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>1. Control de Asistencia y Geolocalización (Check-in / Check-out)</span>
+        <span class="font-mono text-slate-400">Pág. 2</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>2. Panel de Tickets Asignados</span>
+        <span class="font-mono text-slate-400">Pág. 2</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>3. Ejecución de Tareas Específicas</span>
+        <span class="font-mono text-slate-400">Pág. 3</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>4. Elaboración de la Hoja de Servicio Digital</span>
+        <span class="font-mono text-slate-400">Pág. 3</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>5. Captura de Firmas y Evidencias Fotográficas</span>
+        <span class="font-mono text-slate-400">Pág. 4</span>
+      </li>
+    </ol>
+
+    <h3 class="text-xl font-bold text-slate-900 mt-12 mb-4">1. Control de Asistencia y Geolocalización</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">
+      Para registrar tus horas trabajadas y visitas de soporte técnico físico en campo, debes utilizar el módulo de <strong>Control de Asistencia</strong> en el menú lateral:
+    </p>
+    <ul class="space-y-3 text-slate-600 list-disc pl-5 mb-6">
+      <li><strong>Check-in (Entrada):</strong> Al iniciar tu jornada o llegar a las instalaciones del cliente, presiona "Registrar Entrada". La app solicitará permiso para obtener tu ubicación GPS (debes autorizarlo) y registrará la hora de entrada vinculada a tus coordenadas.</li>
+      <li><strong>Check-out (Salida):</strong> Al concluir tu horario o tu intervención presiona "Registrar Salida" para registrar el término de tu asistencia. El sistema calcula automáticamente las horas totales laboradas.</li>
+    </ul>
+
+    <h3 class="text-xl font-bold text-slate-900 mb-4">2. Panel de Tickets Asignados</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">
+      En tu pantalla de inicio como técnico (`/tecnico/dashboard`) podrás visualizar todos los tickets de soporte que te han sido asignados por los administradores.
+    </p>
+    <p class="text-slate-600 leading-relaxed">
+      Cada ticket muestra su prioridad (baja, media, alta), la categoría del incidente y la descripción enviada por el cliente. Tienes la facultad de cambiar el estado del ticket a <strong>"En Proceso"</strong> cuando comiences a trabajar en él y a <strong>"Cerrado"</strong> únicamente cuando hayas completado el soporte y cargado la firma de conformidad del cliente.
+    </p>
+  </div>
+
+  <!-- Página 3 -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm] page-break">
+    <h3 class="text-xl font-bold text-slate-900 mb-4">3. Ejecución de Tareas Específicas</h3>
+    <p class="text-slate-600 leading-relaxed mb-6">
+      Adicionalmente a los tickets, los administradores pueden asignarte <strong>Tareas Independientes</strong> o vinculadas a tickets. Estas tareas suelen tener un listado de subtareas o guías operativas que debes completar paso a paso.
+    </p>
+
+    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 mb-6">
+      <h4 class="font-bold text-indigo-900 mb-2">📋 Flujo de trabajo de Tareas:</h4>
+      <ol class="list-decimal pl-5 text-indigo-950 text-sm space-y-2">
+        <li>Selecciona la pestaña "Tareas Independientes" en tu Dashboard.</li>
+        <li>Haz clic en la tarea asignada para ver los requisitos.</li>
+        <li>Marca las casillas conforme vayas realizando las acciones indicadas.</li>
+        <li>Añade notas del progreso en la sección de comentarios del ticket si es requerido.</li>
+      </ol>
+    </div>
+
+    <h3 class="text-xl font-bold text-slate-900 mb-4">4. Elaboración de la Hoja de Servicio Digital</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">
+      Una vez resuelto el problema de un ticket, es mandatorio generar la **Hoja de Servicio Técnica** oficial. Para hacerlo, haz clic en el botón <strong>"Reporte"</strong> del ticket correspondiente. Esto te redirigirá a un formulario donde debes ingresar:
+    </p>
+    
+    <div class="space-y-4 text-slate-600">
+      <div class="flex gap-3">
+        <span class="font-bold text-brand-600 font-mono">A.</span>
+        <p><strong>Diagnóstico Técnico:</strong> Describe cuál fue el problema raíz identificado (por ejemplo: disco duro dañado, corto en cable UTP, atasco de papel).</p>
+      </div>
+      <div class="flex gap-3">
+        <span class="font-bold text-brand-600 font-mono">B.</span>
+        <p><strong>Trabajo Realizado:</strong> Detalla las acciones tomadas para resolver la falla (por ejemplo: reemplazo de SSD, crimpado de conectores, limpieza del fusor).</p>
+      </div>
+      <div class="flex gap-3">
+        <span class="font-bold text-brand-600 font-mono">C.</span>
+        <p><strong>Materiales y Repuestos:</strong> Especifica si se usaron insumos (por ejemplo: 1 SSD de 480GB, 2 conectores RJ45) con el fin de controlar el inventario de servicios.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Página 4 -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm]">
+    <h3 class="text-xl font-bold text-slate-900 mb-4">5. Captura de Firmas y Evidencias Fotográficas</h3>
+    <p class="text-slate-600 leading-relaxed mb-6">
+      El reporte de servicio técnico no tiene validez legal o contractual sin la respectiva evidencia de la labor. Por ello, la plataforma exige adjuntar fotos y firma digital antes de guardar:
+    </p>
+
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+      <div class="border border-slate-200 rounded-2xl p-5 bg-slate-50">
+        <div class="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center font-bold mb-3">📷</div>
+        <h4 class="font-bold text-slate-900 text-sm mb-1.5">Evidencias Fotográficas</h4>
+        <p class="text-xs text-slate-500 leading-relaxed">
+          Toma y sube hasta <strong>4 fotografías</strong> directamente desde tu dispositivo móvil. Es aconsejable capturar una foto del estado inicial (antes de la reparación) y del estado final de funcionamiento.
+        </p>
+      </div>
+      
+      <div class="border border-slate-200 rounded-2xl p-5 bg-slate-50">
+        <div class="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center font-bold mb-3">✍️</div>
+        <h4 class="font-bold text-slate-900 text-sm mb-1.5">Firma de Conformidad</h4>
+        <p class="text-xs text-slate-500 leading-relaxed">
+          Pídele al cliente o al encargado de la sucursal que firme con su dedo o lápiz óptico dentro de la zona gris de firma digital. Si te equivocas, puedes presionar "Limpiar" para volver a firmar.
+        </p>
+      </div>
+    </div>
+
+    <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-6">
+      <h4 class="font-bold text-emerald-950 mb-1 flex items-center gap-2">⚠️ Importante al finalizar:</h4>
+      <p class="text-emerald-900 text-xs leading-relaxed">
+        Al presionar <strong>"Guardar Reporte de Servicio"</strong> se creará un archivo PDF formal del trabajo. Este reporte se enviará de forma automática al correo del cliente y al administrador central. Asimismo, el ticket se marcará automáticamente como <strong>Cerrado</strong>. Asegúrate de tener conexión a Internet para que la carga de firmas y fotos sea exitosa.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

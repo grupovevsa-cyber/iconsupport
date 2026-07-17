@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Manual de Usuario - Cliente - ICON Support</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    @media print {
+      .no-print { display: none; }
+      body { background: white; color: black; }
+      .page-break { page-break-after: always; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+  <!-- Portada -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm] flex flex-col justify-between page-break">
+    <div>
+      <div class="flex items-center gap-3 mb-16">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl">⚡</div>
+        <div>
+          <span class="text-sm font-bold tracking-wider text-slate-400">ABBA INNOVATION</span>
+          <h2 class="text-xs text-slate-500 font-mono">SOPORTE TÉCNICO</h2>
+        </div>
+      </div>
+      
+      <div class="mt-20">
+        <span class="text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">Manual de Usuario</span>
+        <h1 class="text-5xl font-extrabold text-slate-900 mt-6 leading-tight">Guía de Uso del Portal de Soporte Técnico</h1>
+        <p class="text-lg text-slate-500 mt-4 max-w-xl leading-relaxed">
+          Instrucciones detalladas para clientes e invitados sobre cómo solicitar soporte técnico, realizar seguimiento a sus incidencias y descargar informes de servicio.
+        </p>
+      </div>
+    </div>
+
+    <div class="border-t border-slate-100 pt-8 flex items-center justify-between text-xs text-slate-400">
+      <div>
+        <p class="font-semibold text-slate-700">ICON Support Platform</p>
+        <p>Versión 1.1 — Julio 2026</p>
+      </div>
+      <p class="text-right">ABBA Innovation S.A.</p>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm] page-break">
+    <h2 class="text-2xl font-bold text-slate-900 border-b pb-3 mb-6">Índice del Manual</h2>
+    <ol class="space-y-3 text-slate-600">
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>1. Introducción al Portal de Soporte</span>
+        <span class="font-mono text-slate-400">Pág. 2</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>2. Solicitud de Soporte como Invitado (Sin Iniciar Sesión)</span>
+        <span class="font-mono text-slate-400">Pág. 2</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>3. Seguimiento de Tickets con Código QR</span>
+        <span class="font-mono text-slate-400">Pág. 3</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>4. Uso de la Cuenta de Cliente Registrado</span>
+        <span class="font-mono text-slate-400">Pág. 3</span>
+      </li>
+      <li class="flex justify-between border-b border-dashed border-slate-100 pb-1">
+        <span>5. Consulta de Historial e Informes de Servicio</span>
+        <span class="font-mono text-slate-400">Pág. 4</span>
+      </li>
+    </ol>
+
+    <h3 class="text-xl font-bold text-slate-900 mt-12 mb-4">1. Introducción al Portal de Soporte</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">
+      La plataforma de <strong>ICON Support</strong> es una herramienta diseñada por ABBA Innovation para simplificar la comunicación de incidentes técnicos. A través de este portal, cualquier persona de tu organización puede reportar fallas de hardware, software, redes, servidores o impresoras de manera ágil.
+    </p>
+    <p class="text-slate-600 leading-relaxed">
+      El sistema cuenta con un flujo rápido basado en códigos QR que permite el seguimiento en tiempo real del estado de tu solicitud, las tareas que realiza el técnico asignado, y los reportes de servicio correspondientes.
+    </p>
+  </div>
+
+  <!-- Página 3 -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm] page-break">
+    <h3 class="text-xl font-bold text-slate-900 mb-4">2. Solicitud de Soporte como Invitado (Sin Iniciar Sesión)</h3>
+    <p class="text-slate-600 leading-relaxed mb-6">
+      Si no tienes una cuenta registrada en la plataforma, o necesitas reportar un incidente de forma urgente, puedes hacerlo como <strong>Invitado</strong>:
+    </p>
+
+    <div class="space-y-6">
+      <div class="flex gap-4">
+        <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 mt-1">1</div>
+        <div>
+          <h4 class="font-bold text-slate-900 text-base">Escanea el Código QR o abre el enlace</h4>
+          <p class="text-slate-500 text-sm mt-1">Utiliza la cámara de tu celular para escanear el QR general proporcionado por tu ejecutivo, o haz clic en el enlace público enviado por WhatsApp/Email.</p>
+        </div>
+      </div>
+
+      <div class="flex gap-4">
+        <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 mt-1">2</div>
+        <div>
+          <h4 class="font-bold text-slate-900 text-base">Completa tu Información de Contacto</h4>
+          <p class="text-slate-500 text-sm mt-1">Ingresa tu Nombre completo, Correo electrónico corporativo, Teléfono y el Nombre de la Empresa a la que perteneces. Estos datos son indispensables para que el soporte técnico pueda localizarte.</p>
+        </div>
+      </div>
+
+      <div class="flex gap-4">
+        <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 mt-1">3</div>
+        <div>
+          <h4 class="font-bold text-slate-900 text-base">Detalla la Incidencia</h4>
+          <p class="text-slate-500 text-sm mt-1">Escribe un Título descriptivo y detalla el problema con la mayor precisión posible. Selecciona la Categoría correspondiente (por ejemplo: Redes, Impresoras) y la Prioridad estimada.</p>
+        </div>
+      </div>
+
+      <div class="flex gap-4">
+        <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 mt-1">4</div>
+        <div>
+          <h4 class="font-bold text-slate-900 text-base">Envía la Solicitud</h4>
+          <p class="text-slate-500 text-sm mt-1">Haz clic en <strong>"Enviar Solicitud de Soporte"</strong>. Al completarse la carga, se te presentará la pantalla de confirmación con el código QR exclusivo de tu ticket.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Página 4 -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm] page-break">
+    <h3 class="text-xl font-bold text-slate-900 mb-4">3. Seguimiento de Tickets con Código QR</h3>
+    <p class="text-slate-600 leading-relaxed mb-6">
+      Al enviar tu solicitud, el sistema genera automáticamente un código QR personalizado para tu ticket.
+    </p>
+
+    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 mb-6">
+      <h4 class="font-bold text-indigo-900 mb-2 flex items-center gap-2">💡 ¿Por qué es importante guardar este QR?</h4>
+      <p class="text-indigo-950 text-sm leading-relaxed">
+        Como invitado, no tienes un usuario para entrar al historial del portal. Este código QR es tu <strong>única llave de acceso</strong> para visualizar el avance de tu caso en tiempo real desde tu teléfono, ver quién es el técnico asignado, leer comentarios o descargar la hoja de servicio final una vez concluido el soporte.
+      </p>
+    </div>
+
+    <h3 class="text-xl font-bold text-slate-900 mt-10 mb-4">4. Uso de la Cuenta de Cliente Registrado</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">
+      Si eres un cliente registrado, tienes acceso a un portal privado donde puedes gestionar todo de forma centralizada:
+    </p>
+    <ul class="space-y-3 text-slate-600 list-disc pl-5">
+      <li><strong>Creación Rápida:</strong> Al crear un ticket desde tu cuenta, el sistema ya sabe quién eres y a qué empresa perteneces, por lo que no necesitas rellenar datos de contacto.</li>
+      <li><strong>Mis Tickets:</strong> Un historial unificado donde puedes filtrar tickets abiertos, en proceso o cerrados.</li>
+      <li><strong>Comentarios y Respuestas:</strong> Chatea directamente con el técnico asignado escribiendo comentarios en cada ticket para agilizar aclaraciones o enviar instrucciones adicionales.</li>
+    </ul>
+  </div>
+
+  <!-- Página 5 -->
+  <div class="max-w-4xl mx-auto bg-white p-12 my-8 shadow-sm border border-slate-100 rounded-3xl min-h-[297mm]">
+    <h3 class="text-xl font-bold text-slate-900 mb-4">5. Consulta de Historial e Informes de Servicio</h3>
+    <p class="text-slate-600 leading-relaxed mb-6">
+      Para los clientes registrados, la plataforma ofrece un módulo de **Informes** que te permite auditar la calidad del servicio técnico de soporte contratado.
+    </p>
+
+    <div class="border border-slate-200 rounded-2xl overflow-hidden mb-6">
+      <table class="w-full text-left border-collapse text-sm">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200">
+            <th class="p-3 font-semibold text-slate-700">Sección</th>
+            <th class="p-3 font-semibold text-slate-700">Descripción y utilidad</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="p-3 font-medium text-slate-900">Historial Completo</td>
+            <td class="p-3 text-slate-500">Listado histórico con fechas de apertura y cierre, técnico responsable y prioridad de cada caso.</td>
+          </tr>
+          <tr>
+            <td class="p-3 font-medium text-slate-900">Módulo de Informes</td>
+            <td class="p-3 text-slate-500">Visualiza métricas generales, gráficas de tickets por estado y tiempos promedios de respuesta de soporte técnico.</td>
+          </tr>
+          <tr>
+            <td class="p-3 font-medium text-slate-900">Hoja de Servicio PDF</td>
+            <td class="p-3 text-slate-500">Documento que contiene el diagnóstico del técnico, el trabajo realizado, materiales, fotos adjuntas y firma digital de aprobación.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-6">
+      <h4 class="font-bold text-emerald-900 mb-2 flex items-center gap-2">✅ Reportes y Firma</h4>
+      <p class="text-emerald-950 text-sm leading-relaxed">
+        Cuando el técnico finaliza la tarea, te solicitará firmar digitalmente en su dispositivo para cerrar el ticket. Esto genera de inmediato el PDF oficial del informe, disponible para descarga tanto para ti como para tu empresa.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

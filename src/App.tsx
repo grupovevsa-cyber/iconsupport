@@ -17,6 +17,7 @@ import { ConfiguracionPage } from './pages/admin/ConfiguracionPage'
 import { InformesPage } from './pages/shared/InformesPage'
 import { NuevaTareaPage } from './pages/admin/NuevaTareaPage'
 import { EjecucionTareaPage } from './pages/tecnico/EjecucionTareaPage'
+import { ManualesPage } from './pages/shared/ManualesPage'
 
 // ============================================================
 // ICON Support — App principal con routing
@@ -88,6 +89,10 @@ function AppWithLayout() {
           path="/cliente/informes"
           element={<InformesPage currentUser={profile} />}
         />
+        <Route
+          path="/cliente/manuales"
+          element={<ManualesPage />}
+        />
 
         {/* Rutas de técnico */}
         <Route
@@ -109,6 +114,10 @@ function AppWithLayout() {
         <Route
           path="/tecnico/asistencia"
           element={<AsistenciaPage tecnico={profile} />}
+        />
+        <Route
+          path="/tecnico/manuales"
+          element={<ManualesPage />}
         />
         {/* Formulario de reporte: desde ticket o desde asistencia */}
         <Route
@@ -154,6 +163,10 @@ function AppWithLayout() {
         <Route
           path="/admin/configuracion"
           element={<ConfiguracionPage />}
+        />
+        <Route
+          path="/admin/manuales"
+          element={<ManualesPage />}
         />
 
         {/* Catch-all: redirigir al dashboard */}

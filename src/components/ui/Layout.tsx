@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import {
   TicketIcon, MapPin, Plus, Users,
   LogOut, Zap, Menu, X, ChevronRight,
-  MessageCircle, Settings, FileText, ClipboardList
+  MessageCircle, Settings, FileText, ClipboardList, BookOpen
 } from 'lucide-react'
 import type { Profile, UserRole } from '../../types'
 
@@ -28,6 +28,7 @@ const NAV_LINKS: Record<UserRole, NavItem[]> = {
     { to: '/cliente/nuevo-ticket', icon: Plus,      label: 'Solicitar Soporte' },
     { to: '/cliente/tickets',      icon: TicketIcon, label: 'Mis Tickets' },
     { to: '/cliente/informes',     icon: FileText,   label: 'Informes' },
+    { to: '/cliente/manuales',     icon: BookOpen,   label: 'Manuales' },
   ],
   tecnico: [
     { to: '/tecnico/nuevo-ticket', icon: Plus,       label: 'Crear Ticket' },
@@ -35,6 +36,7 @@ const NAV_LINKS: Record<UserRole, NavItem[]> = {
     { to: '/tecnico/dashboard',  icon: TicketIcon, label: 'Tickets Asignados' },
     { to: '/tecnico/informes',   icon: FileText,   label: 'Informes' },
     { to: '/tecnico/asistencia', icon: MapPin,     label: 'Control de Asistencia' },
+    { to: '/tecnico/manuales',   icon: BookOpen,   label: 'Manuales' },
   ],
   admin: [
     { to: '/admin/nuevo-ticket',   icon: Plus,            label: 'Crear Ticket' },
@@ -45,6 +47,7 @@ const NAV_LINKS: Record<UserRole, NavItem[]> = {
     { to: '/admin/usuarios',       icon: Users,           label: 'Usuarios' },
     { to: '/admin/chatbot',        icon: MessageCircle,   label: 'Bot WhatsApp' },
     { to: '/admin/configuracion',  icon: Settings,        label: 'Configuración' },
+    { to: '/admin/manuales',       icon: BookOpen,        label: 'Manuales' },
   ],
 }
 

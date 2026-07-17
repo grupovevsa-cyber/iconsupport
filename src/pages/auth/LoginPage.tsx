@@ -183,6 +183,7 @@ export function LoginPage() {
               {cargando ? (
                 <><Loader2 size={18} className="animate-spin" /> Procesando...</>
               ) : modo === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+            </button>
           </form>
 
           {modo === 'login' && (
