@@ -1,14 +1,16 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Send, ChevronDown, AlertCircle, CheckCircle2, Loader2,
   Tag, MessageSquare, Building, User, Mail, Phone, Zap
 } from 'lucide-react'
 import { useTickets } from '../../hooks/useTickets'
+import { useAuth } from '../../hooks/useAuth'
 import { QRTicket } from '../../components/QRTicket'
 import type { Ticket } from '../../types'
 
 export function PublicTicketPage() {
   const { crearTicket } = useTickets()
+  const { user } = useAuth()
 
   const [form, setForm] = useState({
     contacto_nombre: '',
@@ -24,6 +26,19 @@ export function PublicTicketPage() {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [ticketCreado, setTicketCreado] = useState<Ticket | null>(null)
+
+  // Pre-llenar datos de contacto si hay sesión iniciada
+  useEffect(() => {
+    if (user?.profile) {
+      setForm(f => ({
+        ...f,
+        contacto_nombre: f.contacto_nombre || user.profile?.nombre || '',
+        contacto_email: f.contacto_email || user.email || '',
+        contacto_telefono: f.contacto_telefono || user.profile?.telefono || '',
+        contacto_empresa: f.contacto_empresa || (user.profile?.rol === 'cliente' ? 'Mi Empresa' : '')
+      }))
+    }
+  }, [user])
 
   const set = (k: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
@@ -43,8 +58,8 @@ export function PublicTicketPage() {
     setCargando(true)
     setError(null)
     try {
-      // Pasamos undefined como clienteId, y los datos del form incluyen el contacto
-      const ticket = await crearTicket(form as any, undefined)
+      // Pasamos user?.id para que se asocie correctamente si hay sesión
+      const ticket = await crearTicket(form as any, user?.id)
       setTicketCreado(ticket)
     } catch (err: any) {
       setError(err.message || 'Error al solicitar el soporte.')
