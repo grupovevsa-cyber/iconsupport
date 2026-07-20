@@ -80,6 +80,8 @@ export function UsuariosPage() {
     setGuardando(true)
 
     try {
+      const cleanTelefono = form.telefono?.trim() || null
+
       if (modoModal === 'crear') {
         // Validaciones básicas
         if (!form.email || !form.password || !form.nombre) {
@@ -92,7 +94,7 @@ export function UsuariosPage() {
           new_password: form.password,
           new_nombre: form.nombre,
           new_rol: form.rol,
-          new_telefono: form.telefono,
+          new_telefono: cleanTelefono,
         })
 
         if (error) throw error
@@ -105,7 +107,7 @@ export function UsuariosPage() {
           .from('profiles')
           .update({
             nombre: form.nombre,
-            telefono: form.telefono,
+            telefono: cleanTelefono,
             rol: form.rol,
           })
           .eq('id', usuarioEditar.id)
