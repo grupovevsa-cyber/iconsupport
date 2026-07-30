@@ -113,13 +113,27 @@ export function UsuariosPage() {
           .eq('id', usuarioEditar.id)
 
         if (error) throw error
+
+        // Cambiar contraseña si se escribió una nueva
+        if (form.password) {
+          const { error: errorPw } = await supabase.rpc('cambiar_password_admin', {
+            target_user_id: usuarioEditar.id,
+            new_password: form.password
+          })
+          if (errorPw) throw errorPw
+        }
+
         toast.success('Usuario actualizado correctamente.')
       }
 
       setModalAbierto(false)
       fetchUsuarios()
     } catch (err: any) {
-      toast.error(err.message || 'Error al guardar usuario.')
+      let msg = err.message || 'Error al guardar usuario.'
+      if (msg.includes('duplicate key') || msg.includes('users_email_key')) {
+        msg = 'Ya existe un usuario registrado con este correo electrónico.'
+      }
+      toast.error(msg)
     } finally {
       setForm({ nombre: '', email: '', password: '', telefono: '', rol: 'cliente' })
       setGuardando(false)
@@ -298,23 +312,21 @@ export function UsuariosPage() {
                 />
               </div>
 
-              {/* Password (Solo Crear) */}
-              {modoModal === 'crear' && (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1.5" htmlFor="form-password">
-                    Contraseña
-                  </label>
-                  <input
-                    id="form-password"
-                    type="password"
-                    required
-                    value={form.password}
-                    onChange={e => setForm({ ...form, password: e.target.value })}
-                    placeholder="Mínimo 6 caracteres"
-                    className="input-base"
-                  />
-                </div>
-              )}
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5" htmlFor="form-password">
+                  {modoModal === 'crear' ? 'Contraseña' : 'Nueva Contraseña (Opcional)'}
+                </label>
+                <input
+                  id="form-password"
+                  type="password"
+                  required={modoModal === 'crear'}
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  placeholder={modoModal === 'crear' ? "Mínimo 6 caracteres" : "Dejar en blanco para no cambiar"}
+                  className="input-base"
+                />
+              </div>
 
               {/* Teléfono */}
               <div>

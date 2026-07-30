@@ -220,11 +220,10 @@ CREATE POLICY "tickets_insert" ON public.tickets
     auth.uid() IS NOT NULL AND cliente_id = auth.uid()
   );
 
--- Actualización: técnico asignado o admin
+-- Actualización: técnico o admin
 CREATE POLICY "tickets_update" ON public.tickets
   FOR UPDATE USING (
-    tecnico_asignado_id = auth.uid()
-    OR public.get_my_rol() = 'admin'
+    public.get_my_rol() IN ('admin', 'tecnico')
   );
 
 -- Eliminación: solo admin
@@ -445,6 +444,27 @@ BEGIN
   END IF;
 
   RETURN new_user_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Cambiar contraseña desde el panel de administración
+CREATE OR REPLACE FUNCTION public.cambiar_password_admin(
+  target_user_id UUID,
+  new_password TEXT
+)
+RETURNS VOID
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Validar que quien ejecuta tenga rol admin
+  IF public.get_my_rol() != 'admin' THEN
+    RAISE EXCEPTION 'Solo los administradores pueden cambiar contraseñas de otros usuarios.';
+  END IF;
+
+  UPDATE auth.users
+  SET encrypted_password = extensions.crypt(new_password, extensions.gen_salt('bf')),
+      updated_at = now()
+  WHERE id = target_user_id;
 END;
 $$ LANGUAGE plpgsql;
 

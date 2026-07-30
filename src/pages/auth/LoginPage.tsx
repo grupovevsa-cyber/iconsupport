@@ -143,23 +143,7 @@ export function LoginPage() {
               />
             </div>
 
-            {/* Rol (solo en registro) */}
-            {modo === 'registro' && (
-              <div className="animate-slide-up">
-                <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="rol">
-                  Tipo de cuenta
-                </label>
-                <select
-                  id="rol"
-                  value={form.rol}
-                  onChange={set('rol')}
-                  className="w-full bg-surface-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all appearance-none"
-                >
-                  <option value="cliente">Cliente — Solicitar soporte</option>
-                  <option value="tecnico">Técnico — Gestionar servicios</option>
-                </select>
-              </div>
-            )}
+
 
             {/* Error / Mensaje */}
             {error && (
