@@ -18,6 +18,7 @@ import { InformesPage } from './pages/shared/InformesPage'
 import { NuevaTareaPage } from './pages/admin/NuevaTareaPage'
 import { EjecucionTareaPage } from './pages/tecnico/EjecucionTareaPage'
 import { ManualesPage } from './pages/shared/ManualesPage'
+import { UpdatePasswordPage } from './pages/auth/UpdatePasswordPage'
 
 // ============================================================
 // ICON Support — App principal con routing
@@ -202,8 +203,7 @@ export default function App() {
       <Routes>
         {/* Ruta pública: login */}
         <Route path="/login" element={<LoginPage />} />
-
-        {/* Ruta pública: formulario libre */}
+        <Route path="/actualizar-password" element={<UpdatePasswordPage />} />
         <Route path="/solicitar-soporte" element={<PublicTicketPage />} />
 
         {/* Ruta pública: seguimiento de ticket vía QR */}

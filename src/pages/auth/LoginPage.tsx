@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Loader2, AlertCircle, Zap, Shield, Wifi } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
@@ -9,12 +9,21 @@ import { useAuth } from '../../hooks/useAuth'
 
 export function LoginPage() {
   const navigate = useNavigate()
-  const { signIn, signUp } = useAuth()
+  const { signIn, signUp, resetPasswordForEmail, user } = useAuth()
 
-  const [modo, setModo] = useState<'login' | 'registro'>('login')
+  const [modo, setModo] = useState<'login' | 'registro' | 'recuperar'>('login')
   const [form, setForm] = useState({ email: '', password: '', nombre: '', rol: 'cliente' })
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (user) {
+      const rol = (user as any).user_metadata?.rol || 'cliente'
+      if (rol === 'admin') navigate('/admin/dashboard', { replace: true })
+      else if (rol === 'tecnico') navigate('/tecnico/dashboard', { replace: true })
+      else navigate('/cliente/nuevo-ticket', { replace: true })
+    }
+  }, [user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,6 +34,9 @@ export function LoginPage() {
       if (modo === 'login') {
         await signIn(form.email, form.password)
         navigate('/dashboard')
+      } else if (modo === 'recuperar') {
+        await resetPasswordForEmail(form.email)
+        setError('✅ Te hemos enviado un enlace de recuperación a tu correo.')
       } else {
         await signUp(form.email, form.password, form.nombre, form.rol)
         setError('✅ Cuenta creada. Revisa tu email para confirmar tu cuenta.')
@@ -127,21 +139,36 @@ export function LoginPage() {
             </div>
 
             {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="password">
-                Contraseña
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={form.password}
-                onChange={set('password')}
-                placeholder="Mínimo 6 caracteres"
-                className="w-full bg-surface-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all"
-              />
-            </div>
+            {modo !== 'recuperar' && (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="password">
+                  Contraseña
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  minLength={6}
+                  value={form.password}
+                  onChange={set('password')}
+                  placeholder="Mínimo 6 caracteres"
+                  className="w-full bg-surface-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all"
+                />
+              </div>
+            )}
+
+            {/* Olvidé mi contraseña (solo en login) */}
+            {modo === 'login' && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setModo('recuperar')}
+                  className="text-xs text-brand-400 hover:text-brand-300 font-medium transition-colors"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+            )}
 
 
 
@@ -166,18 +193,41 @@ export function LoginPage() {
             >
               {cargando ? (
                 <><Loader2 size={18} className="animate-spin" /> Procesando...</>
-              ) : modo === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+              ) : modo === 'login' ? 'Iniciar Sesión' : modo === 'recuperar' ? 'Enviar Enlace' : 'Crear Cuenta'}
             </button>
           </form>
 
-          {modo === 'login' && (
+          {modo === 'login' ? (
             <div className="mt-6 pt-5 border-t border-slate-800 text-center">
               <a
                 href="/solicitar-soporte"
-                className="inline-flex items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 font-semibold transition-colors mb-4"
               >
                 ¿No tienes cuenta? Solicitar soporte como invitado →
               </a>
+              <p className="text-sm text-slate-400">
+                ¿No tienes cuenta?{' '}
+                <button
+                  type="button"
+                  onClick={() => setModo('registro')}
+                  className="text-brand-400 hover:text-brand-300 font-bold transition-colors"
+                >
+                  Regístrate aquí
+                </button>
+              </p>
+            </div>
+          ) : (
+            <div className="mt-6 pt-5 border-t border-slate-800 text-center">
+              <p className="text-sm text-slate-400">
+                ¿Ya tienes cuenta?{' '}
+                <button
+                  type="button"
+                  onClick={() => setModo('login')}
+                  className="text-brand-400 hover:text-brand-300 font-bold transition-colors"
+                >
+                  Inicia sesión
+                </button>
+              </p>
             </div>
           )}
         </div>
