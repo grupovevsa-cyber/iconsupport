@@ -14,11 +14,13 @@ import { FormularioReportePage } from './pages/tecnico/FormularioReportePage'
 import { UsuariosPage } from './pages/admin/UsuariosPage'
 import { ChatBotPage } from './pages/admin/ChatBotPage'
 import { ConfiguracionPage } from './pages/admin/ConfiguracionPage'
+import { CalendarioAdminPage } from './pages/admin/CalendarioAdminPage'
 import { InformesPage } from './pages/shared/InformesPage'
 import { NuevaTareaPage } from './pages/admin/NuevaTareaPage'
 import { EjecucionTareaPage } from './pages/tecnico/EjecucionTareaPage'
 import { ManualesPage } from './pages/shared/ManualesPage'
 import { UpdatePasswordPage } from './pages/auth/UpdatePasswordPage'
+import { SuperAdminDashboard } from './pages/superadmin/SuperAdminDashboard'
 
 // ============================================================
 // ICON Support — App principal con routing
@@ -27,6 +29,7 @@ import { UpdatePasswordPage } from './pages/auth/UpdatePasswordPage'
 /** Redirige al dashboard correcto según el rol del usuario */
 function RoleRedirect({ rol }: { rol: string }) {
   switch (rol) {
+    case 'superadmin': return <Navigate to="/superadmin/dashboard" replace />
     case 'admin':   return <Navigate to="/admin/dashboard" replace />
     case 'tecnico': return <Navigate to="/tecnico/dashboard" replace />
     case 'cliente': return <Navigate to="/cliente/nuevo-ticket" replace />
@@ -69,11 +72,27 @@ function AppWithLayout() {
 
   const profile = user.profile
 
+
+
   return (
     <Layout currentUser={profile} onSignOut={signOut}>
       <Routes>
         {/* Redirección raíz */}
         <Route path="/dashboard" element={<RoleRedirect rol={profile.rol} />} />
+
+        {/* Rutas de SuperAdmin */}
+        <Route
+          path="/superadmin/dashboard"
+          element={<SuperAdminDashboard />}
+        />
+        <Route
+          path="/superadmin/usuarios"
+          element={<UsuariosPage />}
+        />
+        <Route
+          path="/superadmin/configuracion"
+          element={<ConfiguracionPage />}
+        />
 
         {/* Rutas de cliente */}
         <Route
@@ -156,6 +175,10 @@ function AppWithLayout() {
         <Route
           path="/admin/usuarios"
           element={<UsuariosPage />}
+        />
+        <Route
+          path="/admin/calendario"
+          element={<CalendarioAdminPage currentUser={profile} />}
         />
         <Route
           path="/admin/chatbot"

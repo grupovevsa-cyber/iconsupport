@@ -32,6 +32,8 @@ export function InformesPage({ currentUser }: InformesPageProps) {
   const { tickets, loading, fetchTickets, actualizarTicket } = useTickets()
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState<TicketEstado | 'todos'>('todos')
+  const [filtroTecnico, setFiltroTecnico] = useState<string>('todos')
+  const [filtroCliente, setFiltroCliente] = useState<string>('todos')
   
   // Filtros de Fecha
   const [fechaDesde, setFechaDesde] = useState('')
@@ -45,6 +47,7 @@ export function InformesPage({ currentUser }: InformesPageProps) {
   // Panel lateral
   const [ticketSeleccionado, setTicketSeleccionado] = useState<Ticket | null>(null)
   const [tecnicos, setTecnicos] = useState<Profile[]>([])
+  const [clientes, setClientes] = useState<Profile[]>([])
   const [guardando, setGuardando] = useState(false)
   const [editForm, setEditForm] = useState<Partial<Ticket>>({})
   const [reporteCierrePdfUrl, setReporteCierrePdfUrl] = useState<string | null>(null)
@@ -61,19 +64,24 @@ export function InformesPage({ currentUser }: InformesPageProps) {
     // Si es admin, filtros queda vacío y trae todos
     fetchTickets(filtros)
     
-    // Cargar técnicos si es admin (para poder asignar)
-    if (currentUser.rol === 'admin') {
+    // Cargar técnicos y clientes si es admin o técnico
+    if (currentUser.rol === 'admin' || currentUser.rol === 'tecnico') {
       supabase.from('profiles').select('*').eq('rol', 'tecnico')
         .then(({ data }) => setTecnicos(data as Profile[] || []))
+      supabase.from('profiles').select('*').eq('rol', 'cliente')
+        .then(({ data }) => setClientes(data as Profile[] || []))
     }
   }, [currentUser])
 
   // Filtrado local adicional
   const ticketsFiltrados = tickets.filter(t => {
     const matchEstado = filtroEstado === 'todos' || t.estado === filtroEstado
+    const matchTecnico = filtroTecnico === 'todos' || t.tecnico_asignado_id === filtroTecnico
+    const matchCliente = filtroCliente === 'todos' || t.cliente_id === filtroCliente
     const matchBusqueda = !busqueda || 
       t.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
       t.cliente?.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      t.tecnico_asignado?.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
       String(t.numero_ticket).includes(busqueda)
       
     let matchFecha = true
@@ -95,7 +103,7 @@ export function InformesPage({ currentUser }: InformesPageProps) {
       }
     }
     
-    return matchEstado && matchBusqueda && matchFecha
+    return matchEstado && matchTecnico && matchCliente && matchBusqueda && matchFecha
   })
 
   const handleGenerarReporteGeneral = () => {
@@ -225,6 +233,40 @@ export function InformesPage({ currentUser }: InformesPageProps) {
               </select>
               <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
             </div>
+
+            {currentUser.rol === 'admin' && (
+              <div className="relative">
+                <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <select
+                  value={filtroTecnico}
+                  onChange={(e) => setFiltroTecnico(e.target.value)}
+                  className="bg-surface-800 border border-slate-700 rounded-xl pl-8 pr-8 py-2.5 text-sm text-white focus:outline-none appearance-none min-w-[160px]"
+                >
+                  <option value="todos">Todos los técnicos</option>
+                  {tecnicos.map(t => (
+                    <option key={t.id} value={t.id}>{t.nombre}</option>
+                  ))}
+                </select>
+                <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+              </div>
+            )}
+
+            {(currentUser.rol === 'admin' || currentUser.rol === 'tecnico') && (
+              <div className="relative">
+                <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <select
+                  value={filtroCliente}
+                  onChange={(e) => setFiltroCliente(e.target.value)}
+                  className="bg-surface-800 border border-slate-700 rounded-xl pl-8 pr-8 py-2.5 text-sm text-white focus:outline-none appearance-none min-w-[160px]"
+                >
+                  <option value="todos">Todos los clientes</option>
+                  {clientes.map(c => (
+                    <option key={c.id} value={c.id}>{c.nombre}</option>
+                  ))}
+                </select>
+                <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+              </div>
+            )}
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-surface-800/30 p-3 rounded-xl border border-slate-700/50">

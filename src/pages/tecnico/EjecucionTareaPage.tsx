@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { supabase, uploadFile } from '../../lib/supabaseClient'
 import { useAuth } from '../../hooks/useAuth'
 import { SignaturePad } from '../../components/SignaturePad'
+import { BitacoraCRM } from '../../components/ui/BitacoraCRM'
 import { generarTareaPDF } from '../../lib/pdf-tarea-generator'
 import type { Tarea, Profile } from '../../types'
 
@@ -37,7 +38,8 @@ export function EjecucionTareaPage() {
         .from('tareas')
         .select(`
           *,
-          tecnico:tecnico_id (*)
+          tecnico:tecnico_id (*),
+          bitacora (*)
         `)
         .eq('id', id)
         .single()
@@ -250,6 +252,16 @@ export function EjecucionTareaPage() {
               <img src={firmaUrl} alt="Firma del cliente" className="h-12 w-auto object-contain bg-white rounded-lg p-1" />
             </div>
           )}
+        </section>
+
+        {/* Bitácora / CRM */}
+        <section className="bg-surface-900 border border-slate-800 rounded-2xl h-[400px]">
+          <BitacoraCRM
+            tareaId={tarea.id}
+            mensajes={tarea.bitacora || []}
+            currentUser={user?.profile}
+            onMensajeEnviado={cargarTarea}
+          />
         </section>
 
         {/* Acciones */}

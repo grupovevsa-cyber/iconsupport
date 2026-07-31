@@ -12,6 +12,7 @@ import type { Profile, UserRole } from '../../types'
 // ============================================================
 
 const ROL_BADGES: Record<UserRole, string> = {
+  superadmin: 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/20',
   admin:   'bg-purple-500/15 text-purple-400 border border-purple-500/20',
   tecnico: 'bg-brand-500/15 text-brand-400 border border-brand-500/20',
   cliente: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20',

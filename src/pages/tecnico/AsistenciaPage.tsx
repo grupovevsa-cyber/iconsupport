@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LogIn, LogOut, History, FileText, TicketIcon, Loader2 } from 'lucide-react'
+import { LogIn, LogOut, History, FileText, Ticket as TicketIcon, Loader2, Calendar as CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { CheckInOut } from '../../components/CheckInOut'
+import { CalendarioVisitas } from './components/CalendarioVisitas'
 import { useAsistencias } from '../../hooks/useAsistencias'
 import { supabase } from '../../lib/supabaseClient'
 import type { Asistencia, Profile, Ticket } from '../../types'
@@ -22,7 +23,7 @@ export function AsistenciaPage({ tecnico }: AsistenciaPageProps) {
   const { historial, fetchHistorial, asistenciaActiva } = useAsistencias()
   const [ticketsAbiertos, setTicketsAbiertos] = useState<Ticket[]>([])
   const [ticketSeleccionado, setTicketSeleccionado] = useState<string | undefined>()
-  const [tab, setTab] = useState<'asistencia' | 'historial'>('asistencia')
+  const [tab, setTab] = useState<'asistencia' | 'historial' | 'calendario'>('calendario') // Default to calendario since they just requested it
 
   useEffect(() => {
     fetchHistorial(tecnico.id)
@@ -50,7 +51,17 @@ export function AsistenciaPage({ tecnico }: AsistenciaPageProps) {
       </div>
 
       {/* Tabs */}
-      <div className="flex bg-surface-800 rounded-xl p-1">
+      <div className="flex bg-surface-800 rounded-xl p-1 overflow-x-auto custom-scrollbar">
+        <button
+          id="tab-calendario"
+          onClick={() => setTab('calendario')}
+          className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+            tab === 'calendario' ? 'bg-brand-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <CalendarIcon size={15} />
+          Calendario
+        </button>
         <button
           id="tab-asistencia"
           onClick={() => setTab('asistencia')}
@@ -126,6 +137,11 @@ export function AsistenciaPage({ tecnico }: AsistenciaPageProps) {
             </button>
           )}
         </div>
+      )}
+
+      {/* Tab: Calendario */}
+      {tab === 'calendario' && (
+        <CalendarioVisitas currentUser={tecnico} />
       )}
 
       {/* Tab: Historial */}

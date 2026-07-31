@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   Clock, User, Tag, AlertCircle, CheckCircle2,
-  Loader2, MessageSquare, Zap, Timer, CheckSquare, Trash2, Plus, Circle
+  Loader2, MessageSquare, Zap, Timer, CheckSquare, Trash2, Plus, Circle, FileText
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -11,6 +11,7 @@ import { useTickets } from '../../hooks/useTickets'
 import { useAuth } from '../../hooks/useAuth'
 import { useTasks } from '../../hooks/useTasks'
 import { QRTicket } from '../../components/QRTicket'
+import { BitacoraCRM } from '../../components/ui/BitacoraCRM'
 import { supabase } from '../../lib/supabaseClient'
 import type { Ticket, TareaEstado, Profile } from '../../types'
 
@@ -287,6 +288,19 @@ export function SeguimientoPage() {
                             <span className="font-semibold">Técnico:</span> {tarea.tecnico.nombre}
                           </div>
                         )}
+                        {tarea.pdf_url && (
+                          <div className="mt-2">
+                            <a
+                              href={tarea.pdf_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded shadow-lg transition-colors"
+                            >
+                              <FileText size={12} />
+                              Ver Reporte de Asistencia
+                            </a>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -390,39 +404,15 @@ export function SeguimientoPage() {
           )}
         </div>
 
-        {/* Comentarios */}
-        {ticket.comentarios && ticket.comentarios.filter(c => !c.es_interno).length > 0 && (
-          <div className="bg-surface-900 rounded-2xl border border-slate-800 p-5 space-y-3">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <MessageSquare size={14} />
-              Actualizaciones
-            </h2>
-            <div className="space-y-3">
-              {ticket.comentarios
-                .filter(c => !c.es_interno)
-                .map(comentario => (
-                  <div key={comentario.id} className="flex gap-3">
-                    <div className="w-7 h-7 rounded-full bg-brand-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-brand-400">
-                        {comentario.autor?.nombre.charAt(0).toUpperCase() || '?'}
-                      </span>
-                    </div>
-                    <div className="flex-1 bg-surface-800/60 rounded-xl p-3 border border-slate-800">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-semibold text-slate-300">
-                          {comentario.autor?.nombre || 'Sistema'}
-                        </span>
-                        <span className="text-xs text-slate-600">
-                          {format(new Date(comentario.creado_en), "dd/MM HH:mm")}
-                        </span>
-                      </div>
-                      <p className="text-sm text-slate-300">{comentario.mensaje}</p>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
+        {/* Bitácora / CRM */}
+        <div className="bg-surface-900 rounded-2xl border border-slate-800 h-[500px]">
+          <BitacoraCRM
+            ticketId={ticket.id}
+            mensajes={ticket.bitacora || []}
+            currentUser={user?.profile}
+            onMensajeEnviado={() => getTicket(ticket.id).then(t => setTicket(t))}
+          />
+        </div>
 
         {/* QR del ticket */}
         <div className="bg-surface-900 rounded-2xl border border-slate-800 p-5">

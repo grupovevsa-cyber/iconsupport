@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   TicketIcon, Filter, Search, ChevronDown,
   AlertCircle, Timer, CheckCircle2, Loader2, Eye, Users, FileText,
-  Globe, Copy, ExternalLink, X
+  Globe, Copy, ExternalLink, X, MessageSquare
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { QRTicket } from '../../components/QRTicket'
@@ -395,6 +395,14 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
                             >
                               <Eye size={11} />
                               Ver QR
+                            </button>
+
+                            <button
+                              onClick={() => navigate(`/ticket/seguimiento/${ticket.id}`)}
+                              className="flex items-center gap-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+                            >
+                              <MessageSquare size={11} />
+                              Detalles / CRM
                             </button>
 
                             <button

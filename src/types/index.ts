@@ -2,7 +2,7 @@
 // ICON Support — Tipos TypeScript globales
 // ============================================================
 
-export type UserRole = 'admin' | 'tecnico' | 'cliente';
+export type UserRole = 'superadmin' | 'admin' | 'tecnico' | 'cliente';
 export type TicketEstado = 'abierto' | 'en_proceso' | 'cerrado';
 export type TicketPrioridad = 'baja' | 'media' | 'alta';
 
@@ -16,6 +16,17 @@ export interface Profile {
   telefono?: string;
   creado_en: string;
   actualizado_en: string;
+  empresa_id?: string;
+}
+
+// ── Empresa SAAS (Inquilino principal) ────────────────────
+export interface EmpresaSaas {
+  id: string;
+  nombre: string;
+  plan: string;
+  activa: boolean;
+  creado_en: string;
+  payment_link?: string;
 }
 
 // ── Ticket ────────────────────────────────────────────────
@@ -37,10 +48,11 @@ export interface Ticket {
   contacto_empresa?: string;
   creado_en: string;
   actualizado_en: string;
+  empresa_id?: string;
   // Relaciones (joins)
   cliente?: Profile;
   tecnico_asignado?: Profile;
-  comentarios?: ComentarioTicket[];
+  bitacora?: BitacoraMensaje[];
   tareas?: Tarea[];
 }
 
@@ -71,6 +83,7 @@ export interface Asistencia {
   notas?: string;
   duracion_minutos?: number;
   creado_en: string;
+  empresa_id?: string;
   // Relaciones
   tecnico?: Profile;
   ticket?: Ticket;
@@ -148,14 +161,25 @@ export interface VisitaReporte {
   imagenes?: ImagenReporte[];
 }
 
-// ── Comentario de ticket ──────────────────────────────────
-export interface ComentarioTicket {
+// ── Mensaje de Bitácora (CRM) ─────────────────────────────
+export interface BitacoraAdjunto {
+  url: string;
+  nombre: string;
+  tipo: string;
+  size?: number;
+}
+
+export interface BitacoraMensaje {
   id: string;
-  ticket_id: string;
+  ticket_id?: string;
+  tarea_id?: string;
+  visita_id?: string;
   autor_id: string;
   mensaje: string;
+  adjuntos: BitacoraAdjunto[];
   es_interno: boolean;
   creado_en: string;
+  empresa_id?: string;
   autor?: Profile;
 }
 
@@ -196,6 +220,31 @@ export interface Tarea {
   firma_supervisor?: string;
   creado_en: string;
   actualizado_en: string;
+  empresa_id?: string;
   // Relaciones
   tecnico?: Profile;
+  bitacora?: BitacoraMensaje[];
+}
+
+// ── Visitas Programadas ───────────────────────────────────
+export interface VisitaProgramada {
+  id: string;
+  titulo: string;
+  descripcion?: string;
+  fecha_inicio: string;
+  fecha_fin: string;
+  tecnico_id: string;
+  ticket_id?: string;
+  cliente_id?: string;
+  creado_por: string;
+  estado: 'programada' | 'completada' | 'cancelada';
+  creado_en: string;
+  actualizado_en: string;
+  empresa_id?: string;
+  // Relaciones
+  tecnico?: Profile;
+  creador?: Profile;
+  cliente?: Profile;
+  ticket?: Ticket;
+  bitacora?: BitacoraMensaje[];
 }

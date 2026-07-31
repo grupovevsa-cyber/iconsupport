@@ -141,7 +141,7 @@ export function useTickets() {
         *,
         cliente:profiles!tickets_cliente_id_fkey(*),
         tecnico_asignado:profiles!tickets_tecnico_asignado_id_fkey(*),
-        comentarios:comentarios_tickets(*, autor:profiles(*))
+        bitacora(*, autor:profiles(*))
       `)
       .eq('id', id)
       .single()
@@ -158,7 +158,7 @@ export function useTickets() {
     esInterno: boolean = false
   ) => {
     const { error: err } = await supabase
-      .from('comentarios_tickets')
+      .from('bitacora')
       .insert({ ticket_id: ticketId, autor_id: autorId, mensaje, es_interno: esInterno })
 
     if (err) throw new Error(err.message)

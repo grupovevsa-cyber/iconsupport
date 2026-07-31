@@ -522,3 +522,120 @@ CREATE POLICY "tareas_delete" ON public.tareas
   FOR DELETE USING (public.get_my_rol() = 'admin');
 
 
+
+-- ============================================================
+-- 7. TABLA: visitas_programadas (Citas / Calendario)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.visitas_programadas (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  creado_por      UUID REFERENCES public.profiles(id) NOT NULL,
+  tecnico_id      UUID REFERENCES public.profiles(id) NOT NULL,
+  cliente_id      UUID REFERENCES public.profiles(id),
+  ticket_id       UUID REFERENCES public.tickets(id),
+  titulo          TEXT NOT NULL,
+  descripcion     TEXT,
+  fecha_inicio    TIMESTAMPTZ NOT NULL,
+  fecha_fin       TIMESTAMPTZ NOT NULL,
+  estado          TEXT NOT NULL DEFAULT 'programada',
+  creado_en       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  actualizado_en  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_visitas_prog_tecnico_id ON public.visitas_programadas(tecnico_id);
+CREATE INDEX IF NOT EXISTS idx_visitas_prog_cliente_id ON public.visitas_programadas(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_visitas_prog_ticket_id  ON public.visitas_programadas(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_visitas_prog_fecha_inicio ON public.visitas_programadas(fecha_inicio);
+
+ALTER TABLE public.visitas_programadas ENABLE ROW LEVEL SECURITY;
+
+CREATE TRIGGER trg_visitas_programadas_updated_at
+  BEFORE UPDATE ON public.visitas_programadas
+  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+CREATE POLICY "visitas_prog_select" ON public.visitas_programadas
+  FOR SELECT USING (
+    public.get_my_rol() = 'admin'
+    OR auth.uid() = tecnico_id
+    OR auth.uid() = creado_por
+  );
+
+CREATE POLICY "visitas_prog_insert" ON public.visitas_programadas
+  FOR INSERT WITH CHECK (
+    public.get_my_rol() IN ('admin', 'tecnico')
+  );
+
+CREATE POLICY "visitas_prog_update" ON public.visitas_programadas
+  FOR UPDATE USING (
+    public.get_my_rol() = 'admin'
+    OR auth.uid() = tecnico_id
+    OR auth.uid() = creado_por
+  );
+
+CREATE POLICY "visitas_prog_delete" ON public.visitas_programadas
+  FOR DELETE USING (
+    public.get_my_rol() = 'admin'
+    OR auth.uid() = creado_por
+  );
+
+-- ============================================================
+-- 8. TABLA: bitacora (Anteriormente comentarios_tickets)
+-- ============================================================
+ALTER TABLE IF EXISTS public.comentarios_tickets RENAME TO bitacora;
+
+DO \$\$ 
+BEGIN
+  -- Hacer ticket_id opcional
+  ALTER TABLE public.bitacora ALTER COLUMN ticket_id DROP NOT NULL;
+  
+  -- Aadir nuevas columnas
+  ALTER TABLE public.bitacora ADD COLUMN IF NOT EXISTS tarea_id UUID REFERENCES public.tareas(id) ON DELETE CASCADE;
+  ALTER TABLE public.bitacora ADD COLUMN IF NOT EXISTS visita_id UUID REFERENCES public.visitas_programadas(id) ON DELETE CASCADE;
+  ALTER TABLE public.bitacora ADD COLUMN IF NOT EXISTS adjuntos JSONB DEFAULT '[]'::jsonb;
+EXCEPTION
+  WHEN OTHERS THEN
+    NULL;
+END \$\$;
+
+CREATE INDEX IF NOT EXISTS idx_bitacora_tarea_id ON public.bitacora(tarea_id);
+CREATE INDEX IF NOT EXISTS idx_bitacora_visita_id ON public.bitacora(visita_id);
+
+-- Actualizar politicas de RLS (borramos las viejas y creamos las nuevas)
+DROP POLICY IF EXISTS "comentarios_select" ON public.bitacora;
+DROP POLICY IF EXISTS "comentarios_insert" ON public.bitacora;
+
+CREATE POLICY "bitacora_select" ON public.bitacora
+  FOR SELECT USING (
+    public.get_my_rol() IN ('admin', 'tecnico')
+    OR (
+      public.get_my_rol() = 'cliente' 
+      AND es_interno = FALSE
+    )
+  );
+
+CREATE POLICY "bitacora_insert" ON public.bitacora
+  FOR INSERT WITH CHECK (
+    auth.uid() = autor_id
+  );
+
+-- ============================================================
+-- STORAGE: Bucket para adjuntos de bitacora
+-- ============================================================
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+  VALUES (
+    'adjuntos',
+    'adjuntos',
+    true,
+    10485760,  -- 10 MB
+    ARRAY['image/png', 'image/jpeg', 'image/webp', 'application/pdf']
+  )
+  ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "storage_adjuntos_upload" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'adjuntos'
+    AND auth.uid() IS NOT NULL
+  );
+
+CREATE POLICY "storage_adjuntos_select" ON storage.objects
+  FOR SELECT USING (bucket_id = 'adjuntos');
+

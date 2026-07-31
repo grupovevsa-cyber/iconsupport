@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import {
   TicketIcon, MapPin, Plus, Users,
   LogOut, Zap, Menu, X, ChevronRight,
-  MessageCircle, Settings, FileText, ClipboardList, BookOpen
+  MessageCircle, Settings, FileText, ClipboardList, BookOpen, Calendar
 } from 'lucide-react'
 import type { Profile, UserRole } from '../../types'
 
@@ -24,6 +24,11 @@ interface NavItem {
 }
 
 const NAV_LINKS: Record<UserRole, NavItem[]> = {
+  superadmin: [
+    { to: '/superadmin/dashboard',     icon: TicketIcon,      label: 'Empresas (Tenants)' },
+    { to: '/superadmin/usuarios',      icon: Users,           label: 'Gestión Global de Usuarios' },
+    { to: '/superadmin/configuracion', icon: Settings,        label: 'Configuración Global' },
+  ],
   cliente: [
     { to: '/cliente/nuevo-ticket', icon: Plus,      label: 'Solicitar Soporte' },
     { to: '/cliente/tickets',      icon: TicketIcon, label: 'Mis Tickets' },
@@ -45,6 +50,7 @@ const NAV_LINKS: Record<UserRole, NavItem[]> = {
     { to: '/admin/informes',       icon: FileText,        label: 'Informes' },
     { to: '/tecnico/asistencia',   icon: MapPin,          label: 'Asistencias' },
     { to: '/admin/usuarios',       icon: Users,           label: 'Usuarios' },
+    { to: '/admin/calendario',     icon: Calendar,        label: 'Calendario' },
     { to: '/admin/chatbot',        icon: MessageCircle,   label: 'Bot WhatsApp' },
     { to: '/admin/configuracion',  icon: Settings,        label: 'Configuración' },
     { to: '/admin/manuales',       icon: BookOpen,        label: 'Manuales' },
@@ -52,6 +58,7 @@ const NAV_LINKS: Record<UserRole, NavItem[]> = {
 }
 
 const ROL_COLORS: Record<UserRole, string> = {
+  superadmin: 'bg-indigo-500/20 text-indigo-300',
   admin:   'bg-purple-500/20 text-purple-300',
   tecnico: 'bg-brand-500/20 text-brand-300',
   cliente: 'bg-emerald-500/20 text-emerald-300',
