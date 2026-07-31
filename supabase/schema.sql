@@ -419,7 +419,11 @@ BEGIN
     role,
     created_at,
     updated_at,
-    phone
+    phone,
+    confirmation_token,
+    recovery_token,
+    email_change_token_new,
+    email_change
   )
   VALUES (
     new_user_id,
@@ -433,7 +437,11 @@ BEGIN
     'authenticated',
     now(),
     now(),
-    new_telefono
+    new_telefono,
+    '',
+    '',
+    '',
+    ''
   );
 
   -- Actualizar el teléfono en public.profiles ya que el trigger no lo mapea automáticamente
