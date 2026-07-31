@@ -4,10 +4,13 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { 
   FileText, Search, Filter, ChevronDown, 
-  X, Save, Loader2, User, Clock, AlertCircle
+  X, Save, Loader2, User, Clock, AlertCircle, Calendar, Printer
 } from 'lucide-react'
 import type { Ticket, Profile, TicketEstado } from '../../types'
 import { supabase } from '../../lib/supabaseClient'
+import { ReportPreviewModal } from '../../components/ReportPreviewModal'
+import { generateTicketsListPDF, generateTicketDetailPDF } from '../../utils/pdfGenerator'
+import { jsPDF } from 'jspdf'
 
 interface InformesPageProps {
   currentUser: Profile
@@ -30,11 +33,22 @@ export function InformesPage({ currentUser }: InformesPageProps) {
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState<TicketEstado | 'todos'>('todos')
   
+  // Filtros de Fecha
+  const [fechaDesde, setFechaDesde] = useState('')
+  const [fechaHasta, setFechaHasta] = useState('')
+
+  // Modal PDF
+  const [pdfDoc, setPdfDoc] = useState<jsPDF | null>(null)
+  const [isPdfOpen, setIsPdfOpen] = useState(false)
+  const [pdfFilename, setPdfFilename] = useState('reporte.pdf')
+  
   // Panel lateral
   const [ticketSeleccionado, setTicketSeleccionado] = useState<Ticket | null>(null)
   const [tecnicos, setTecnicos] = useState<Profile[]>([])
   const [guardando, setGuardando] = useState(false)
   const [editForm, setEditForm] = useState<Partial<Ticket>>({})
+  const [reporteCierrePdfUrl, setReporteCierrePdfUrl] = useState<string | null>(null)
+  const [buscandoReporte, setBuscandoReporte] = useState(false)
 
   useEffect(() => {
     // Filtro basado en rol
@@ -59,14 +73,68 @@ export function InformesPage({ currentUser }: InformesPageProps) {
     const matchEstado = filtroEstado === 'todos' || t.estado === filtroEstado
     const matchBusqueda = !busqueda || 
       t.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
-      t.cliente?.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+      t.cliente?.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
       String(t.numero_ticket).includes(busqueda)
+      
+    let matchFecha = true
+    if (fechaDesde || fechaHasta) {
+      const ticketDate = new Date(t.creado_en)
+      // Reset hours for accurate comparison
+      ticketDate.setHours(0, 0, 0, 0)
+      
+      if (fechaDesde) {
+        const fromDate = new Date(fechaDesde)
+        fromDate.setMinutes(fromDate.getMinutes() + fromDate.getTimezoneOffset())
+        matchFecha = matchFecha && ticketDate >= fromDate
+      }
+      
+      if (fechaHasta) {
+        const toDate = new Date(fechaHasta)
+        toDate.setMinutes(toDate.getMinutes() + toDate.getTimezoneOffset())
+        matchFecha = matchFecha && ticketDate <= toDate
+      }
+    }
     
-    return matchEstado && matchBusqueda
+    return matchEstado && matchBusqueda && matchFecha
   })
 
+  const handleGenerarReporteGeneral = () => {
+    let filtroTexto = ''
+    if (fechaDesde || fechaHasta) {
+      filtroTexto += `Fechas: ${fechaDesde || 'Inicio'} a ${fechaHasta || 'Fin'}. `
+    }
+    if (filtroEstado !== 'todos') filtroTexto += `Estado: ${filtroEstado.toUpperCase()}.`
+    
+    const doc = generateTicketsListPDF(ticketsFiltrados, 'Reporte General de Tickets', filtroTexto)
+    setPdfDoc(doc)
+    setPdfFilename('reporte_general.pdf')
+    setIsPdfOpen(true)
+  }
+
+  const handleGenerarReporteIndividual = (ticket: Ticket) => {
+    const doc = generateTicketDetailPDF(ticket)
+    setPdfDoc(doc)
+    setPdfFilename(`Ticket_TCK-${String(ticket.numero_ticket || 0).padStart(5, '0')}.pdf`)
+    setIsPdfOpen(true)
+  }
+
+  const setMesActual = () => {
+    const date = new Date()
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1)
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+    
+    const formatDate = (d: Date) => {
+      const offset = d.getTimezoneOffset()
+      const adjusted = new Date(d.getTime() - (offset*60*1000))
+      return adjusted.toISOString().split('T')[0]
+    }
+    
+    setFechaDesde(formatDate(firstDay))
+    setFechaHasta(formatDate(lastDay))
+  }
+
   // Abrir panel lateral
-  const abrirPanel = (ticket: Ticket) => {
+  const abrirPanel = async (ticket: Ticket) => {
     setTicketSeleccionado(ticket)
     setEditForm({
       estado: ticket.estado,
@@ -74,6 +142,29 @@ export function InformesPage({ currentUser }: InformesPageProps) {
       tecnico_asignado_id: ticket.tecnico_asignado_id,
       notas_internas: ticket.notas_internas || ''
     })
+
+    // Si el ticket está cerrado, buscar el reporte final firmado
+    setReporteCierrePdfUrl(null)
+    if (ticket.estado === 'cerrado') {
+      setBuscandoReporte(true)
+      try {
+        const { data, error } = await supabase
+          .from('visitas_reportes')
+          .select('pdf_reporte_url')
+          .eq('ticket_id', ticket.id)
+          .order('creado_en', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (data && data.pdf_reporte_url) {
+          setReporteCierrePdfUrl(data.pdf_reporte_url)
+        }
+      } catch (err) {
+        console.error('No se pudo cargar el reporte de cierre', err)
+      } finally {
+        setBuscandoReporte(false)
+      }
+    }
   }
 
   const handleGuardar = async () => {
@@ -108,30 +199,79 @@ export function InformesPage({ currentUser }: InformesPageProps) {
         </div>
 
         {/* Barra de herramientas */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="relative flex-1">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            <input
-              type="text"
-              placeholder="Buscar por TCK, título o cliente..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full bg-surface-800 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500"
-            />
+        <div className="flex flex-col gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                type="text"
+                placeholder="Buscar por TCK, título o cliente..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="w-full bg-surface-800 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500"
+              />
+            </div>
+            <div className="relative">
+              <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <select
+                value={filtroEstado}
+                onChange={(e) => setFiltroEstado(e.target.value as any)}
+                className="bg-surface-800 border border-slate-700 rounded-xl pl-8 pr-8 py-2.5 text-sm text-white focus:outline-none appearance-none min-w-[160px]"
+              >
+                <option value="todos">Todos los estados</option>
+                <option value="abierto">Abiertos</option>
+                <option value="en_proceso">En proceso</option>
+                <option value="cerrado">Cerrados</option>
+              </select>
+              <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            </div>
           </div>
-          <div className="relative">
-            <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            <select
-              value={filtroEstado}
-              onChange={(e) => setFiltroEstado(e.target.value as any)}
-              className="bg-surface-800 border border-slate-700 rounded-xl pl-8 pr-8 py-2.5 text-sm text-white focus:outline-none appearance-none min-w-[160px]"
+          
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-surface-800/30 p-3 rounded-xl border border-slate-700/50">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Calendar size={14} className="text-slate-400" />
+                <span className="text-sm text-slate-400">Desde:</span>
+                <input 
+                  type="date" 
+                  value={fechaDesde}
+                  onChange={(e) => setFechaDesde(e.target.value)}
+                  className="bg-surface-800 border border-slate-700 rounded-lg px-2 py-1.5 text-sm text-white focus:outline-none focus:border-brand-500"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-400">Hasta:</span>
+                <input 
+                  type="date" 
+                  value={fechaHasta}
+                  onChange={(e) => setFechaHasta(e.target.value)}
+                  className="bg-surface-800 border border-slate-700 rounded-lg px-2 py-1.5 text-sm text-white focus:outline-none focus:border-brand-500"
+                />
+              </div>
+              <button 
+                onClick={setMesActual}
+                className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Este Mes
+              </button>
+              {(fechaDesde || fechaHasta) && (
+                <button 
+                  onClick={() => { setFechaDesde(''); setFechaHasta(''); }}
+                  className="text-xs text-red-400 hover:text-red-300 px-2 py-1.5 transition-colors flex items-center gap-1"
+                >
+                  <X size={12} /> Limpiar
+                </button>
+              )}
+            </div>
+            
+            <button
+              onClick={handleGenerarReporteGeneral}
+              disabled={ticketsFiltrados.length === 0}
+              className="flex items-center gap-2 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 disabled:hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-glow/20"
             >
-              <option value="todos">Todos los estados</option>
-              <option value="abierto">Abiertos</option>
-              <option value="en_proceso">En proceso</option>
-              <option value="cerrado">Cerrados</option>
-            </select>
-            <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+              <Printer size={16} />
+              Generar Reporte PDF
+            </button>
           </div>
         </div>
 
@@ -229,7 +369,34 @@ export function InformesPage({ currentUser }: InformesPageProps) {
           {/* Formulario de Bitácora */}
           <div className="flex-1 overflow-y-auto p-4 space-y-5">
             <div>
-              <p className="text-lg font-medium text-white">{ticketSeleccionado.titulo}</p>
+              <div className="flex justify-between items-start gap-4">
+                <p className="text-lg font-medium text-white">{ticketSeleccionado.titulo}</p>
+                <div className="flex flex-col gap-2 shrink-0">
+                  <button
+                    onClick={() => handleGenerarReporteIndividual(ticketSeleccionado)}
+                    className="flex items-center gap-1.5 bg-surface-800 hover:bg-surface-700 text-brand-400 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-slate-700 w-full justify-center"
+                  >
+                    <FileText size={14} />
+                    Resumen Dinámico
+                  </button>
+                  {reporteCierrePdfUrl && (
+                    <a
+                      href={reporteCierrePdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-emerald-500/20 w-full justify-center"
+                    >
+                      <FileText size={14} />
+                      Reporte Firmado PDF
+                    </a>
+                  )}
+                  {buscandoReporte && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-500 w-full justify-center">
+                      <Loader2 size={12} className="animate-spin" /> Buscando firma...
+                    </div>
+                  )}
+                </div>
+              </div>
               <p className="text-sm text-slate-400 mt-2 bg-surface-950 p-3 rounded-xl border border-slate-800">
                 {ticketSeleccionado.descripcion || 'Sin descripción.'}
               </p>
@@ -318,6 +485,14 @@ export function InformesPage({ currentUser }: InformesPageProps) {
           )}
         </div>
       )}
+
+      {/* Modal Vista Previa de Reporte */}
+      <ReportPreviewModal 
+        isOpen={isPdfOpen}
+        onClose={() => setIsPdfOpen(false)}
+        pdfDoc={pdfDoc}
+        filename={pdfFilename}
+      />
     </div>
   )
 }
