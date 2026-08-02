@@ -18,7 +18,7 @@ export interface Profile {
   actualizado_en: string;
   empresa_id?: string;
   // Relaciones
-  empresa_saas?: { nombre: string };
+  empresas_saas?: { nombre: string };
 }
 
 // ── Empresa SAAS (Inquilino principal) ────────────────────

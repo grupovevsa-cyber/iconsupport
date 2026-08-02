@@ -50,7 +50,7 @@ export function UsuariosPage() {
       // Obtener perfiles
       const { data: dataUsers, error: errUsers } = await supabase
         .from('profiles')
-        .select('*, empresa_saas(nombre)')
+        .select('*, empresas_saas(nombre)')
         .order('creado_en', { ascending: false })
 
       if (errUsers) throw errUsers
@@ -265,10 +265,10 @@ export function UsuariosPage() {
                       <span className={`inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-semibold capitalize ${ROL_BADGES[user.rol]}`}>
                         {user.rol}
                       </span>
-                      {isSuperAdmin && user.empresa_saas && (
-                        <span className="block text-[10px] text-slate-400 mt-1 truncate max-w-[120px]">
-                          🏢 {user.empresa_saas.nombre}
-                        </span>
+                      {isSuperAdmin && user.empresas_saas && (
+                        <div className="text-xs text-brand-400 mt-1">
+                          🏢 {user.empresas_saas.nombre}
+                        </div>
                       )}
                     </div>
                   </div>
