@@ -35,10 +35,27 @@ export function SuperAdminDashboard() {
 
   const fetchEmpresas = async () => {
     setLoading(true)
-    const { data, error } = await supabase.rpc('get_superadmin_metrics')
+    const { data, error } = await supabase
+      .from('empresas_saas')
+      .select(`
+        *,
+        perfiles:profiles(count),
+        tickets:tickets(count)
+      `)
+      .order('creado_en', { ascending: false })
     
-    if (data) setEmpresas(data)
-    if (error) console.error('Error fetching metrics:', error)
+    if (error) {
+      console.error('Error fetching metrics:', error)
+    }
+    
+    if (data) {
+      const formattedData = data.map((emp: any) => ({
+        ...emp,
+        total_usuarios: emp.perfiles?.[0]?.count || 0,
+        total_tickets: emp.tickets?.[0]?.count || 0,
+      }))
+      setEmpresas(formattedData)
+    }
     setLoading(false)
   }
 
