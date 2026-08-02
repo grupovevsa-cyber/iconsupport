@@ -169,6 +169,11 @@ export const UpdatePasswordPage = () => {
 
         </div>
       </div>
+
+      {/* Footer Global */}
+      <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-slate-500 font-medium">
+        Desarrollado por GRUPO VEV, S.A. V.1. 2026
+      </div>
     </div>
   )
 }

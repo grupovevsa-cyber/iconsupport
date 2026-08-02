@@ -17,6 +17,8 @@ export interface Profile {
   creado_en: string;
   actualizado_en: string;
   empresa_id?: string;
+  // Relaciones
+  empresa_saas?: { nombre: string };
 }
 
 // ── Empresa SAAS (Inquilino principal) ────────────────────
@@ -26,7 +28,11 @@ export interface EmpresaSaas {
   plan: string;
   activa: boolean;
   creado_en: string;
+  fecha_vencimiento?: string;
+  monto_mensual?: number;
   payment_link?: string;
+  total_usuarios?: number;
+  total_tickets?: number;
 }
 
 // ── Ticket ────────────────────────────────────────────────
@@ -248,3 +254,17 @@ export interface VisitaProgramada {
   ticket?: Ticket;
   bitacora?: BitacoraMensaje[];
 }
+
+// ── Historial de Pagos ────────────────────────────────────
+export interface PagoHistorial {
+  id: string;
+  empresa_id: string;
+  monto: number;
+  fecha_pago: string;
+  referencia_pago?: string;
+  metodo_pago?: string;
+  estado: string;
+  creado_por?: string;
+  empresa_nombre?: string;
+}
+

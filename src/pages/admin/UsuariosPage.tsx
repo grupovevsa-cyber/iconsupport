@@ -5,7 +5,8 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { supabase } from '../../lib/supabaseClient'
-import type { Profile, UserRole } from '../../types'
+import { useAuth } from '../../hooks/useAuth'
+import type { Profile, UserRole, EmpresaSaas } from '../../types'
 
 // ============================================================
 // Página: Gestión de Usuarios (Admin)
@@ -19,9 +20,15 @@ const ROL_BADGES: Record<UserRole, string> = {
 }
 
 export function UsuariosPage() {
+  const { user } = useAuth()
+  const isSuperAdmin = user?.profile?.rol === 'superadmin'
+
   const [usuarios, setUsuarios] = useState<Profile[]>([])
+  const [empresas, setEmpresas] = useState<{ id: string; nombre: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
+  const [filtroEmpresa, setFiltroEmpresa] = useState('')
+  
   const [modalAbierto, setModalAbierto] = useState(false)
   const [modoModal, setModoModal] = useState<'crear' | 'editar'>('crear')
   const [usuarioEditar, setUsuarioEditar] = useState<Profile | null>(null)
@@ -33,45 +40,59 @@ export function UsuariosPage() {
     password: '',
     telefono: '',
     rol: 'cliente' as UserRole,
+    empresa_id: ''
   })
   const [guardando, setGuardando] = useState(false)
 
-  const fetchUsuarios = async () => {
+  const fetchDatos = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
+      // Obtener perfiles
+      const { data: dataUsers, error: errUsers } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, empresa_saas(nombre)')
         .order('creado_en', { ascending: false })
 
-      if (error) throw error
-      setUsuarios((data as Profile[]) || [])
+      if (errUsers) throw errUsers
+      setUsuarios((dataUsers as Profile[]) || [])
+
+      // Si es superadmin, obtener empresas para el filtro
+      if (isSuperAdmin) {
+        const { data: dataEmp, error: errEmp } = await supabase
+          .from('empresas_saas')
+          .select('id, nombre')
+          .order('nombre')
+        if (!errEmp && dataEmp) setEmpresas(dataEmp)
+      }
     } catch (err: any) {
-      toast.error('Error al cargar usuarios: ' + err.message)
+      toast.error('Error al cargar datos: ' + err.message)
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchUsuarios()
-  }, [])
+    if (user) {
+      fetchDatos()
+    }
+  }, [user])
 
   const handleOpenCrear = () => {
     setModoModal('crear')
-    setForm({ nombre: '', email: '', password: '', telefono: '', rol: 'cliente' })
+    setForm({ nombre: '', email: '', password: '', telefono: '', rol: 'cliente', empresa_id: '' })
     setModalAbierto(true)
   }
 
-  const handleOpenEditar = (user: Profile) => {
+  const handleOpenEditar = (usr: Profile) => {
     setModoModal('editar')
-    setUsuarioEditar(user)
+    setUsuarioEditar(usr)
     setForm({
-      nombre: user.nombre,
-      email: user.email,
+      nombre: usr.nombre,
+      email: usr.email,
       password: '', // no editable directamente
-      telefono: user.telefono || '',
-      rol: user.rol,
+      telefono: usr.telefono || '',
+      rol: usr.rol,
+      empresa_id: usr.empresa_id || ''
     })
     setModalAbierto(true)
   }
@@ -90,13 +111,19 @@ export function UsuariosPage() {
         }
 
         // Llamar a la función RPC que crearemos en Supabase
-        const { data, error } = await supabase.rpc('crear_usuario_admin', {
+        const args: any = {
           new_email: form.email,
           new_password: form.password,
           new_nombre: form.nombre,
           new_rol: form.rol,
           new_telefono: cleanTelefono,
-        })
+        }
+        
+        if (isSuperAdmin && form.empresa_id) {
+          args.new_empresa_id = form.empresa_id;
+        }
+
+        const { data, error } = await supabase.rpc('crear_usuario_admin', args)
 
         if (error) throw error
         toast.success('Usuario creado correctamente.')
@@ -110,6 +137,7 @@ export function UsuariosPage() {
             nombre: form.nombre,
             telefono: cleanTelefono,
             rol: form.rol,
+            ...(isSuperAdmin && form.empresa_id ? { empresa_id: form.empresa_id } : {})
           })
           .eq('id', usuarioEditar.id)
 
@@ -128,7 +156,7 @@ export function UsuariosPage() {
       }
 
       setModalAbierto(false)
-      fetchUsuarios()
+      fetchDatos()
     } catch (err: any) {
       let msg = err.message || 'Error al guardar usuario.'
       if (msg.includes('duplicate key') || msg.includes('users_email_key')) {
@@ -136,7 +164,7 @@ export function UsuariosPage() {
       }
       toast.error(msg)
     } finally {
-      setForm({ nombre: '', email: '', password: '', telefono: '', rol: 'cliente' })
+      setForm({ nombre: '', email: '', password: '', telefono: '', rol: 'cliente', empresa_id: '' })
       setGuardando(false)
     }
   }
@@ -147,7 +175,10 @@ export function UsuariosPage() {
       u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
       u.email.toLowerCase().includes(busqueda.toLowerCase()) ||
       (u.telefono && u.telefono.includes(busqueda))
-    return matchBusqueda
+      
+    const matchEmpresa = !filtroEmpresa || u.empresa_id === filtroEmpresa
+    
+    return matchBusqueda && matchEmpresa
   })
 
   return (
@@ -175,16 +206,33 @@ export function UsuariosPage() {
       </div>
 
       {/* Filtros */}
-      <div className="relative">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input
-          id="busqueda-usuarios"
-          type="text"
-          placeholder="Buscar por nombre, correo o teléfono..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="w-full bg-surface-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all"
-        />
+      <div className="flex flex-col md:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <input
+            id="busqueda-usuarios"
+            type="text"
+            placeholder="Buscar por nombre, correo o teléfono..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="w-full bg-surface-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all"
+          />
+        </div>
+        
+        {isSuperAdmin && (
+          <div className="w-full md:w-64 shrink-0">
+            <select
+              value={filtroEmpresa}
+              onChange={(e) => setFiltroEmpresa(e.target.value)}
+              className="w-full bg-surface-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all"
+            >
+              <option value="">Todas las empresas</option>
+              {empresas.map(emp => (
+                <option key={emp.id} value={emp.id}>{emp.nombre}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Lista de usuarios */}
@@ -217,6 +265,11 @@ export function UsuariosPage() {
                       <span className={`inline-block px-2.5 py-0.5 mt-1 rounded-full text-[10px] font-semibold capitalize ${ROL_BADGES[user.rol]}`}>
                         {user.rol}
                       </span>
+                      {isSuperAdmin && user.empresa_saas && (
+                        <span className="block text-[10px] text-slate-400 mt-1 truncate max-w-[120px]">
+                          🏢 {user.empresa_saas.nombre}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -359,10 +412,32 @@ export function UsuariosPage() {
                     <option value="cliente">Cliente</option>
                     <option value="tecnico">Técnico</option>
                     <option value="admin">Administrador</option>
+                    {isSuperAdmin && <option value="superadmin">Super Admin</option>}
                   </select>
                   <Shield size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
                 </div>
               </div>
+              
+              {/* Empresa (Solo si es SuperAdmin) */}
+              {isSuperAdmin && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5" htmlFor="form-empresa">
+                    Empresa a la que pertenece
+                  </label>
+                  <select
+                    id="form-empresa"
+                    value={form.empresa_id}
+                    onChange={e => setForm({ ...form, empresa_id: e.target.value })}
+                    className="input-base"
+                    required
+                  >
+                    <option value="" disabled>Seleccione una empresa</option>
+                    {empresas.map(emp => (
+                      <option key={emp.id} value={emp.id}>{emp.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Acciones */}
               <div className="flex gap-3 pt-3">

@@ -285,6 +285,11 @@ export function PublicTicketPage() {
           </button>
         </form>
       </div>
+      
+      {/* Footer Global */}
+      <div className="mt-8 text-center text-xs text-slate-500 font-medium pb-4">
+        Desarrollado por GRUPO VEV, S.A. V.1. 2026
+      </div>
     </div>
   )
 }

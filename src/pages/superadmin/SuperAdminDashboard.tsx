@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from 'react'
-import { Building2, Plus, LogOut, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Building2, Plus, LogOut, CheckCircle, XCircle, AlertCircle, Settings, Users as UsersIcon, Ticket as TicketIcon, BarChart3 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import type { EmpresaSaas } from '../../types'
+import { SuperAdminInformes } from './SuperAdminInformes'
 
 export function SuperAdminDashboard() {
+  const [activeTab, setActiveTab] = useState<'empresas' | 'informes'>('empresas')
   const [empresas, setEmpresas] = useState<EmpresaSaas[]>([])
   const [loading, setLoading] = useState(true)
   const [showNewModal, setShowNewModal] = useState(false)
   const [generatingLink, setGeneratingLink] = useState<string | null>(null)
+  
+  // Modal de Gestionar
+  const [showManageModal, setShowManageModal] = useState(false)
+  const [empresaSeleccionada, setEmpresaSeleccionada] = useState<EmpresaSaas | null>(null)
+  const [adminPrincipal, setAdminPrincipal] = useState<any>(null)
+  const [nuevaPassword, setNuevaPassword] = useState('')
+  const [cargandoAdmin, setCargandoAdmin] = useState(false)
 
   // Formulario para nueva empresa y su admin
   const [form, setForm] = useState({
@@ -26,13 +35,75 @@ export function SuperAdminDashboard() {
 
   const fetchEmpresas = async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('empresas_saas')
-      .select('*')
-      .order('creado_en', { ascending: false })
+    const { data, error } = await supabase.rpc('get_superadmin_metrics')
     
     if (data) setEmpresas(data)
+    if (error) console.error('Error fetching metrics:', error)
     setLoading(false)
+  }
+
+  const openManageModal = async (empresa: EmpresaSaas) => {
+    setEmpresaSeleccionada(empresa)
+    setShowManageModal(true)
+    setAdminPrincipal(null)
+    setNuevaPassword('')
+    setCargandoAdmin(true)
+    
+    // Buscar al administrador principal (el primero que se encuentre)
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('empresa_id', empresa.id)
+      .eq('rol', 'admin')
+      .limit(1)
+      .single()
+      
+    if (data) setAdminPrincipal(data)
+    setCargandoAdmin(false)
+  }
+
+  const handleActualizarEmpresa = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!empresaSeleccionada) return
+    setGuardando(true)
+    try {
+      const { error } = await supabase
+        .from('empresas_saas')
+        .update({ 
+          nombre: empresaSeleccionada.nombre,
+          plan: empresaSeleccionada.plan,
+          activa: empresaSeleccionada.activa,
+          monto_mensual: empresaSeleccionada.monto_mensual,
+          fecha_vencimiento: empresaSeleccionada.fecha_vencimiento
+        })
+        .eq('id', empresaSeleccionada.id)
+      
+      if (error) throw error
+      alert('Empresa actualizada correctamente')
+      fetchEmpresas()
+      setShowManageModal(false)
+    } catch (err: any) {
+      console.error(err)
+      alert('Error: ' + err.message)
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  const handleCambiarPassword = async () => {
+    if (!adminPrincipal || !nuevaPassword) return
+    try {
+      const { error } = await supabase.rpc('cambiar_password_admin', {
+        target_user_id: adminPrincipal.id,
+        new_password: nuevaPassword
+      })
+      if (error) throw error
+      alert('Contraseña cambiada exitosamente')
+      setNuevaPassword('')
+    } catch (err: any) {
+      console.error(err)
+      alert('Error al cambiar contraseña: ' + err.message)
+    }
   }
 
   const handleLogout = async () => {
@@ -140,7 +211,35 @@ export function SuperAdminDashboard() {
           </button>
         </header>
 
-        <div className="flex justify-end mb-6">
+        {/* Tabs */}
+        <div className="flex items-center gap-4 border-b border-slate-800 mb-6 pb-px overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('empresas')}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === 'empresas'
+                ? 'text-brand-400 border-brand-400'
+                : 'text-slate-400 border-transparent hover:text-white hover:border-slate-700'
+            }`}
+          >
+            <Building2 size={16} />
+            Inquilinos (Empresas)
+          </button>
+          <button
+            onClick={() => setActiveTab('informes')}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === 'informes'
+                ? 'text-brand-400 border-brand-400'
+                : 'text-slate-400 border-transparent hover:text-white hover:border-slate-700'
+            }`}
+          >
+            <BarChart3 size={16} />
+            Finanzas y Reportes
+          </button>
+        </div>
+
+        {activeTab === 'empresas' ? (
+          <>
+            <div className="flex justify-end mb-6">
           <button 
             onClick={() => setShowNewModal(true)}
             className="flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-xl transition-colors font-medium shadow-glow/20"
@@ -160,8 +259,9 @@ export function SuperAdminDashboard() {
                   <th className="p-4 text-sm font-medium text-slate-400">Empresa</th>
                   <th className="p-4 text-sm font-medium text-slate-400">Plan</th>
                   <th className="p-4 text-sm font-medium text-slate-400">Estado</th>
-                  <th className="p-4 text-sm font-medium text-slate-400">Fecha Registro</th>
+                  <th className="p-4 text-sm font-medium text-slate-400">Métricas</th>
                   <th className="p-4 text-sm font-medium text-slate-400">Pago (Paguelo Fácil)</th>
+                  <th className="p-4 text-sm font-medium text-slate-400">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -181,7 +281,16 @@ export function SuperAdminDashboard() {
                       )}
                     </td>
                     <td className="p-4 text-slate-400 text-sm">
-                      {new Date(emp.creado_en).toLocaleDateString()}
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5" title="Total Usuarios">
+                          <UsersIcon size={14} className="text-slate-500" />
+                          <span className="font-semibold text-white">{emp.total_usuarios || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5" title="Total Tickets">
+                          <TicketIcon size={14} className="text-slate-500" />
+                          <span className="font-semibold text-white">{emp.total_tickets || 0}</span>
+                        </div>
+                      </div>
                     </td>
                     <td className="p-4">
                       {emp.payment_link ? (
@@ -210,6 +319,14 @@ export function SuperAdminDashboard() {
                         </button>
                       )}
                     </td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => openManageModal(emp)}
+                        className="flex items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 font-medium px-3 py-1.5 bg-brand-500/10 hover:bg-brand-500/20 rounded-lg transition-colors"
+                      >
+                        <Settings size={14} /> Gestionar
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {empresas.length === 0 && (
@@ -222,6 +339,10 @@ export function SuperAdminDashboard() {
               </tbody>
             </table>
           </div>
+        )}
+          </>
+        ) : (
+          <SuperAdminInformes />
         )}
       </div>
 
@@ -317,6 +438,132 @@ export function SuperAdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showManageModal && empresaSeleccionada && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl relative animate-scale-in max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-white mb-1">Gestionar Empresa</h2>
+            <p className="text-sm text-slate-400 mb-6">Detalles y configuración del Inquilino (Tenant)</p>
+            
+            <form onSubmit={handleActualizarEmpresa} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Nombre</label>
+                <input
+                  required
+                  type="text"
+                  value={empresaSeleccionada.nombre}
+                  onChange={(e) => setEmpresaSeleccionada({...empresaSeleccionada, nombre: e.target.value})}
+                  className="w-full bg-surface-800 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-brand-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Plan</label>
+                <select
+                  value={empresaSeleccionada.plan}
+                  onChange={(e) => setEmpresaSeleccionada({...empresaSeleccionada, plan: e.target.value})}
+                  className="w-full bg-surface-800 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-brand-500"
+                >
+                  <option value="pro">Pro</option>
+                  <option value="basic">Básico</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Monto Mensual ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={empresaSeleccionada.monto_mensual || ''}
+                    onChange={(e) => setEmpresaSeleccionada({...empresaSeleccionada, monto_mensual: parseFloat(e.target.value)})}
+                    className="w-full bg-surface-800 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-brand-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Fecha Vencimiento</label>
+                  <input
+                    type="date"
+                    value={empresaSeleccionada.fecha_vencimiento ? empresaSeleccionada.fecha_vencimiento.split('T')[0] : ''}
+                    onChange={(e) => setEmpresaSeleccionada({...empresaSeleccionada, fecha_vencimiento: e.target.value})}
+                    className="w-full bg-surface-800 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-brand-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-3 cursor-pointer p-3 bg-surface-800 border border-slate-700 rounded-xl hover:bg-surface-700 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={empresaSeleccionada.activa}
+                    onChange={(e) => setEmpresaSeleccionada({...empresaSeleccionada, activa: e.target.checked})}
+                    className="w-5 h-5 rounded bg-surface-900 border-slate-600 text-brand-500 focus:ring-brand-500 focus:ring-offset-surface-800"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-white block">Empresa Activa</span>
+                    <span className="text-xs text-slate-400 block">Si se desactiva, nadie de esta empresa podrá iniciar sesión.</span>
+                  </div>
+                </label>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={guardando}
+                  className="flex-1 bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white py-2 rounded-xl font-medium transition-colors"
+                >
+                  {guardando ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+
+            <div className="border-t border-slate-800 my-6 pt-6">
+              <h3 className="text-sm font-semibold text-brand-400 mb-4 flex items-center gap-2">
+                <UsersIcon size={16} /> Administrador de la Cuenta
+              </h3>
+              
+              {cargandoAdmin ? (
+                <div className="text-sm text-slate-400">Cargando datos...</div>
+              ) : adminPrincipal ? (
+                <div className="space-y-4">
+                  <div className="bg-surface-800 border border-slate-700 p-4 rounded-xl">
+                    <p className="text-sm text-slate-400 mb-1">Nombre: <span className="text-white font-medium ml-1">{adminPrincipal.nombre}</span></p>
+                    <p className="text-sm text-slate-400">Correo: <span className="text-white font-medium ml-1">{adminPrincipal.email}</span></p>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      placeholder="Nueva contraseña"
+                      value={nuevaPassword}
+                      onChange={(e) => setNuevaPassword(e.target.value)}
+                      className="flex-1 bg-surface-800 border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-brand-500"
+                    />
+                    <button
+                      onClick={handleCambiarPassword}
+                      disabled={!nuevaPassword}
+                      className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                    >
+                      Cambiar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-yellow-400/80 bg-yellow-500/10 p-3 rounded-xl border border-yellow-500/20">
+                  No se encontró ningún administrador principal para esta empresa.
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowManageModal(false)}
+              className="mt-6 w-full bg-surface-800 hover:bg-surface-700 text-white py-2 rounded-xl font-medium transition-colors border border-slate-700"
+            >
+              Cerrar
+            </button>
           </div>
         </div>
       )}

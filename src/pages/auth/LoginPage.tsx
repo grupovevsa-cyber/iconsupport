@@ -71,7 +71,9 @@ export function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-indigo-600 shadow-glow mb-4">
             <Zap size={28} className="text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">ICON Support</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            <span className="text-white">ICON</span> <span className="text-brand-400">Support</span>
+          </h1>
           <p className="text-slate-400 mt-1 text-sm">Sistema de Gestión de Soporte Técnico</p>
         </div>
 
@@ -245,6 +247,11 @@ export function LoginPage() {
             </div>
           ))}
         </div>
+      </div>
+      
+      {/* Footer Global */}
+      <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-slate-500 font-medium">
+        Desarrollado por GRUPO VEV, S.A. V.1. 2026
       </div>
     </div>
   )

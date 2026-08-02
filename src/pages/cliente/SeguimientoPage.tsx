@@ -139,7 +139,9 @@ export function SeguimientoPage() {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center">
             <Zap size={16} className="text-white" />
           </div>
-          <span className="font-bold text-white text-sm">ICON Support</span>
+          <span className="font-bold text-sm">
+            <span className="text-white">ICON</span> <span className="text-brand-400">Support</span>
+          </span>
           <span className="text-slate-600 text-sm">— Seguimiento de Ticket</span>
         </div>
       </nav>
@@ -425,8 +427,8 @@ export function SeguimientoPage() {
         </div>
 
         {/* Footer */}
-        <div className="text-center text-xs text-slate-700 pb-4">
-          {import.meta.env.VITE_EMPRESA_NOMBRE || 'ICON Support'} — Sistema de Soporte Técnico
+        <div className="text-center text-xs text-slate-500 font-medium pb-4">
+          Desarrollado por GRUPO VEV, S.A. V.1. 2026
         </div>
       </div>
     </div>

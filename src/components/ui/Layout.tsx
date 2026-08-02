@@ -78,7 +78,9 @@ export function Layout({ children, currentUser, onSignOut }: LayoutProps) {
             <Zap size={18} className="text-white" />
           </div>
           <div>
-            <h1 className="font-bold text-white text-sm leading-tight">ICON Support</h1>
+            <h1 className="font-bold text-sm leading-tight">
+              <span className="text-white">ICON</span> <span className="text-brand-400">Support</span>
+            </h1>
             <p className="text-xs text-slate-500">Soporte Técnico</p>
           </div>
         </div>
@@ -180,16 +182,23 @@ export function Layout({ children, currentUser, onSignOut }: LayoutProps) {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center">
               <Zap size={14} className="text-white" />
             </div>
-            <span className="font-bold text-white text-sm">ICON Support</span>
+            <span className="font-bold text-sm">
+              <span className="text-white">ICON</span> <span className="text-brand-400">Support</span>
+            </span>
           </div>
           <div className="w-9" />
         </header>
 
         {/* Área de contenido con scroll */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto flex flex-col">
+          <div className="max-w-4xl mx-auto p-4 sm:p-6 flex-1 w-full">
             {children}
           </div>
+          
+          {/* Footer Global */}
+          <footer className="py-4 text-center text-xs text-slate-500 border-t border-slate-800/50 mt-auto">
+            Desarrollado por GRUPO VEV, S.A. V.1. 2026
+          </footer>
         </main>
       </div>
     </div>
