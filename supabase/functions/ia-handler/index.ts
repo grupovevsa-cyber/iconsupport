@@ -117,6 +117,7 @@ Reglas:
         categoria: 'soporte',
         cliente_id: perfil?.id || null,
         origen: 'whatsapp_ia',
+        empresa_id: sesion.empresa_id || null,
       })
 
       respuestaIA += '\n\n🎫 *He creado un ticket de soporte automáticamente.* Un agente lo revisará en el próximo horario hábil (Lunes-Viernes 8am-6pm).'

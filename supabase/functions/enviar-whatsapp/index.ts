@@ -4,10 +4,10 @@
 // ============================================================
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
-const WA_TOKEN    = Deno.env.get('WHATSAPP_TOKEN')!
-const PHONE_ID    = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID')!
-const META_URL    = `https://graph.facebook.com/v20.0/${PHONE_ID}/messages`
+const FALLBACK_WA_TOKEN = Deno.env.get('WHATSAPP_TOKEN')!
+const FALLBACK_PHONE_ID = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID')!
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,9 +18,31 @@ serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { to, tipo, ...payload } = await req.json()
+    const { to, tipo, empresa_id, ...payload } = await req.json()
 
     if (!to) throw new Error('Falta el campo "to" (número de WhatsApp)')
+
+    let waToken = FALLBACK_WA_TOKEN
+    let phoneId = FALLBACK_PHONE_ID
+
+    if (empresa_id) {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      )
+      const { data: config } = await supabase
+        .from('bot_config')
+        .select('whatsapp_token, whatsapp_phone_id')
+        .eq('empresa_id', empresa_id)
+        .single()
+      
+      if (config && config.whatsapp_token && config.whatsapp_phone_id) {
+        waToken = config.whatsapp_token
+        phoneId = config.whatsapp_phone_id
+      }
+    }
+
+    const META_URL = `https://graph.facebook.com/v20.0/${phoneId}/messages`
 
     let body: Record<string, unknown>
 
@@ -110,7 +132,7 @@ serve(async (req: Request) => {
     const res = await fetch(META_URL, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${WA_TOKEN}`,
+        Authorization: `Bearer ${waToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),

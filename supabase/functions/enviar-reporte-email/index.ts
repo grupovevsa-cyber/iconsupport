@@ -5,10 +5,11 @@
 // ============================================================
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
-const FROM_EMAIL     = Deno.env.get('FROM_EMAIL') || 'soporte@iconsupport.app'
-const EMPRESA_NOMBRE = Deno.env.get('VITE_EMPRESA_NOMBRE') || 'ICON Support'
+const FALLBACK_RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
+const FALLBACK_FROM_EMAIL     = Deno.env.get('FROM_EMAIL') || 'soporte@iconsupport.app'
+const FALLBACK_EMPRESA_NOMBRE = Deno.env.get('VITE_EMPRESA_NOMBRE') || 'ICON Support'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,12 +27,37 @@ serve(async (req: Request) => {
       ticket_titulo,
       ticket_id,
       pdf_url,
-      empresa_nombre,
+      pdf_url,
+      empresa_nombre: payloadEmpresaNombre,
       supervisor,
+      empresa_id,
+      ...payload
     } = await req.json()
 
-    if (!to || !pdf_url) {
-      throw new Error('Faltan campos requeridos: to, pdf_url')
+    if (!to) {
+      throw new Error('Faltan campos requeridos: to')
+    }
+
+    let resendApiKey = FALLBACK_RESEND_API_KEY
+    let fromEmail = FALLBACK_FROM_EMAIL
+    let empresaNombre = payloadEmpresaNombre || FALLBACK_EMPRESA_NOMBRE
+
+    if (empresa_id) {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      )
+      const { data: config } = await supabase
+        .from('bot_config')
+        .select('resend_api_key, from_email, empresa_nombre')
+        .eq('empresa_id', empresa_id)
+        .single()
+      
+      if (config) {
+        if (config.resend_api_key) resendApiKey = config.resend_api_key
+        if (config.from_email) fromEmail = config.from_email
+        if (config.empresa_nombre) empresaNombre = config.empresa_nombre
+      }
     }
 
     const folio = ticket_id ? ticket_id.substring(0, 8).toUpperCase() : 'N/D'
@@ -122,22 +148,22 @@ serve(async (req: Request) => {
 </html>`
 
     // Enviar con Resend
-    const resendRes = await fetch('https://api.resend.com/emails', {
+    const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
+        Authorization: `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: `${EMPRESA_NOMBRE} <${FROM_EMAIL}>`,
+        from: `${empresaNombre} <${fromEmail}>`,
         to: [to],
-        subject: `Reporte de Servicio Técnico — Folio #${folio} | ${EMPRESA_NOMBRE}`,
+        subject: payload.subject || `Reporte de Servicio Técnico — Folio #${folio} | ${empresaNombre}`,
         html: htmlBody,
       }),
     })
 
-    const resendData = await resendRes.json()
-    if (!resendRes.ok) throw new Error(resendData.message || 'Error en Resend')
+    const resendData = await res.json()
+    if (!res.ok) throw new Error(resendData.message || 'Error en Resend')
 
     return new Response(
       JSON.stringify({ ok: true, id: resendData.id }),

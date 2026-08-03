@@ -46,6 +46,7 @@ serve(async (req: Request) => {
       const from       = message.from        // número del remitente
       const msgId      = message.id
       const timestamp  = message.timestamp
+      const phoneNumId = value.metadata?.phone_number_id
 
       // Solo procesar mensajes de texto e interactivos
       let texto = ''
@@ -71,7 +72,7 @@ serve(async (req: Request) => {
       // Llamar al handler principal de forma asíncrona
       // (no esperamos para responder rápido a Meta — timeout de 20s)
       EdgeRuntime.waitUntil(
-        procesarMensaje(supabase, from, texto, contactName, msgId)
+        procesarMensaje(supabase, from, texto, contactName, msgId, phoneNumId)
       )
 
       return new Response('OK', { status: 200 })
@@ -90,9 +91,21 @@ async function procesarMensaje(
   telefono: string,
   texto: string,
   nombre: string | null,
-  msgId: string
+  msgId: string,
+  phoneNumId: string | undefined
 ) {
   try {
+    if (!phoneNumId) {
+      console.error('No phone_number_id in payload')
+      return
+    }
+
+    // Obtener la config del bot usando el phone_number_id de Meta
+    const config = await obtenerConfig(supabase, phoneNumId)
+    if (!config || !config.empresa_id) {
+      console.error(`No hay bot_config configurado para phone_number_id: ${phoneNumId}`)
+      return
+    }
     // 1. Obtener o crear sesión
     let { data: sesion } = await supabase
       .from('whatsapp_sesiones')
@@ -103,13 +116,14 @@ async function procesarMensaje(
     if (!sesion) {
       const { data: nueva } = await supabase
         .from('whatsapp_sesiones')
-        .insert({ telefono, nombre, estado: 'menu', datos_temp: {} })
+        .insert({ telefono, nombre, estado: 'menu', datos_temp: {}, empresa_id: config.empresa_id })
         .select()
         .single()
       sesion = nueva
-    } else if (nombre && !sesion.nombre) {
-      await supabase.from('whatsapp_sesiones').update({ nombre }).eq('id', sesion.id)
+    } else if ((nombre && !sesion.nombre) || (!sesion.empresa_id)) {
+      await supabase.from('whatsapp_sesiones').update({ nombre, empresa_id: config.empresa_id }).eq('id', sesion.id)
       sesion.nombre = nombre
+      sesion.empresa_id = config.empresa_id
     }
 
     // 2. Actualizar último mensaje
@@ -126,7 +140,6 @@ async function procesarMensaje(
     })
 
     // 4. Verificar si está en horario hábil
-    const config = await obtenerConfig(supabase)
     const enHorario = estaEnHorario(config)
 
     // 5. Llamar al handler correcto
@@ -152,9 +165,13 @@ async function procesarMensaje(
 }
 
 // ── Helpers ─────────────────────────────────────────────────
-async function obtenerConfig(supabase: any) {
-  const { data } = await supabase.from('bot_config').select('*').single()
-  return data || {}
+async function obtenerConfig(supabase: any, phoneNumId: string) {
+  const { data } = await supabase
+    .from('bot_config')
+    .select('*')
+    .eq('whatsapp_phone_id', phoneNumId)
+    .single()
+  return data
 }
 
 function estaEnHorario(config: any): boolean {

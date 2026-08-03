@@ -19,7 +19,7 @@ export function LoginPage() {
   useEffect(() => {
     if (user) {
       const rol = (user as any).user_metadata?.rol || 'cliente'
-      if (rol === 'admin') navigate('/admin/dashboard', { replace: true })
+      if (rol === 'admin' || rol === 'superadmin') navigate('/admin/dashboard', { replace: true })
       else if (rol === 'tecnico') navigate('/tecnico/dashboard', { replace: true })
       else navigate('/cliente/nuevo-ticket', { replace: true })
     }
@@ -33,7 +33,7 @@ export function LoginPage() {
     try {
       if (modo === 'login') {
         await signIn(form.email, form.password)
-        navigate('/dashboard')
+        // La redirección ocurrirá automáticamente por el useEffect cuando cambie 'user'
       } else if (modo === 'recuperar') {
         await resetPasswordForEmail(form.email)
         setError('✅ Te hemos enviado un enlace de recuperación a tu correo.')
@@ -50,7 +50,19 @@ export function LoginPage() {
         'User already registered': 'Ya existe una cuenta con este email.',
         'Failed to fetch': 'Error de conexión. Verifica tu internet o los servidores.',
       }
-      setError(msgs[msg] || msg || (typeof err === 'object' ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : String(err)))
+      
+      let errorStr = msgs[msg] || msg
+      if (!errorStr) {
+        if (err instanceof Error) {
+          errorStr = err.message
+        } else if (typeof err === 'object') {
+          errorStr = err.message || err.error_description || JSON.stringify(err)
+          if (errorStr === '{}') errorStr = 'Error inesperado al procesar la solicitud.'
+        } else {
+          errorStr = String(err)
+        }
+      }
+      setError(errorStr)
     } finally {
       setCargando(false)
     }

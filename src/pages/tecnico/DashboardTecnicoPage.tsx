@@ -490,7 +490,7 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
             <div className="flex flex-col items-center gap-5">
               <div className="bg-white p-3 rounded-2xl border border-slate-700">
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent((import.meta.env.VITE_APP_URL || window.location.origin) + '/solicitar-soporte')}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent((import.meta.env.VITE_APP_URL || window.location.origin) + (currentUser?.empresa_id ? `/solicitar-soporte?empresa=${currentUser.empresa_id}` : '/solicitar-soporte'))}`}
                   alt="QR Portal Público"
                   className="w-36 h-36"
                 />
@@ -500,11 +500,11 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
                 <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Enlace de acceso libre</span>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 text-[11px] text-brand-400 font-mono bg-surface-900 py-1.5 px-2.5 rounded-lg overflow-x-auto whitespace-nowrap">
-                    {(import.meta.env.VITE_APP_URL || window.location.origin) + '/solicitar-soporte'}
+                    {(import.meta.env.VITE_APP_URL || window.location.origin) + (currentUser?.empresa_id ? `/solicitar-soporte?empresa=${currentUser.empresa_id}` : '/solicitar-soporte')}
                   </code>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText((import.meta.env.VITE_APP_URL || window.location.origin) + '/solicitar-soporte')
+                      navigator.clipboard.writeText((import.meta.env.VITE_APP_URL || window.location.origin) + (currentUser?.empresa_id ? `/solicitar-soporte?empresa=${currentUser.empresa_id}` : '/solicitar-soporte'))
                       toast.success('Enlace copiado al portapapeles')
                     }}
                     className="p-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 rounded-lg transition-colors shrink-0"
@@ -513,7 +513,7 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
                     <Copy size={14} />
                   </button>
                   <a
-                    href="/solicitar-soporte"
+                    href={currentUser?.empresa_id ? `/solicitar-soporte?empresa=${currentUser.empresa_id}` : "/solicitar-soporte"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 rounded-lg transition-colors shrink-0"

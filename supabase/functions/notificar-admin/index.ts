@@ -24,7 +24,11 @@ serve(async (req) => {
     )
 
     // Obtener configuración del bot (para sacar teléfono y correo de la empresa)
-    const { data: config } = await supabase.from('bot_config').select('*').limit(1).single()
+    const query = supabase.from('bot_config').select('*')
+    if (ticket.empresa_id) {
+      query.eq('empresa_id', ticket.empresa_id)
+    }
+    const { data: config } = await query.limit(1).single()
     if (!config) throw new Error('No se encontró configuración')
 
     const numeroAdmin = config.empresa_telefono
@@ -50,7 +54,8 @@ serve(async (req) => {
         await supabase.functions.invoke('enviar-whatsapp', {
           body: {
             to: adminPhone,
-            message: mensajeAdmin
+            message: mensajeAdmin,
+            empresa_id: ticket.empresa_id
           }
         })
       }
@@ -69,7 +74,8 @@ serve(async (req) => {
                  <p><strong>Cliente:</strong> ${nombreCliente}</p>
                  <p><strong>Prioridad:</strong> ${ticket.prioridad.toUpperCase()}</p>
                  <p><strong>Descripción:</strong><br/>${ticket.descripcion || '-'}</p>
-                 <br/><a href="${config.portal_url}/admin/dashboard">Ver en ICON Support</a>`
+                 <br/><a href="${config.portal_url}/admin/dashboard">Ver en ICON Support</a>`,
+          empresa_id: ticket.empresa_id
         }
       })
     }

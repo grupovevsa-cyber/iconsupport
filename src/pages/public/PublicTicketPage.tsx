@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   Send, ChevronDown, AlertCircle, CheckCircle2, Loader2,
   Tag, MessageSquare, Building, User, Mail, Phone, Zap
 } from 'lucide-react'
+import { supabase } from '../../lib/supabaseClient'
 import { useTickets } from '../../hooks/useTickets'
 import { useAuth } from '../../hooks/useAuth'
 import { QRTicket } from '../../components/QRTicket'
 import type { Ticket } from '../../types'
 
+interface EmpresaPublicConfig {
+  empresa_nombre: string
+  empresa_logo_url: string
+  portal_url: string
+}
+
 export function PublicTicketPage() {
   const { crearTicket } = useTickets()
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
+  const empresaIdParam = searchParams.get('empresa')
 
   const [form, setForm] = useState({
     contacto_nombre: '',
@@ -26,6 +36,25 @@ export function PublicTicketPage() {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [ticketCreado, setTicketCreado] = useState<Ticket | null>(null)
+  
+  const [empresaConfig, setEmpresaConfig] = useState<EmpresaPublicConfig | null>(null)
+  const [cargandoConfig, setCargandoConfig] = useState(false)
+
+  // Cargar configuración de la empresa si viene en la URL
+  useEffect(() => {
+    const fetchEmpresa = async () => {
+      if (!empresaIdParam) return
+      setCargandoConfig(true)
+      const { data, error } = await supabase.rpc('get_empresa_public_config', {
+        p_empresa_id: empresaIdParam
+      })
+      if (data && data.length > 0) {
+        setEmpresaConfig(data[0])
+      }
+      setCargandoConfig(false)
+    }
+    fetchEmpresa()
+  }, [empresaIdParam])
 
   // Pre-llenar datos de contacto si hay sesión iniciada
   useEffect(() => {
@@ -59,7 +88,12 @@ export function PublicTicketPage() {
     setError(null)
     try {
       // Pasamos user?.id para que se asocie correctamente si hay sesión
-      const ticket = await crearTicket(form as any, user?.id)
+      const formAEnviar = { ...form }
+      if (empresaIdParam) {
+        (formAEnviar as any).empresa_id = empresaIdParam
+      }
+      
+      const ticket = await crearTicket(formAEnviar as any, user?.id)
       setTicketCreado(ticket)
     } catch (err: any) {
       setError(err.message || 'Error al solicitar el soporte.')
@@ -120,10 +154,19 @@ export function PublicTicketPage() {
       <div className="w-full max-w-xl animate-fade-in">
         
         <div className="mb-8 text-center flex flex-col items-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center shadow-glow mb-4">
-            <Zap size={24} className="text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">Solicitud de Soporte Técnico</h1>
+          {cargandoConfig ? (
+            <Loader2 className="animate-spin text-brand-400 mb-4" size={32} />
+          ) : empresaConfig?.empresa_logo_url ? (
+            <img src={empresaConfig.empresa_logo_url} alt="Logo" className="h-16 mb-4 object-contain" />
+          ) : (
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center shadow-glow mb-4">
+              <Zap size={24} className="text-white" />
+            </div>
+          )}
+          
+          <h1 className="text-2xl font-bold text-white">
+            {empresaConfig?.empresa_nombre ? `Soporte Técnico - ${empresaConfig.empresa_nombre}` : 'Solicitud de Soporte Técnico'}
+          </h1>
           <p className="text-slate-400 text-sm mt-2">
             Por favor, completa la siguiente información para que uno de nuestros técnicos pueda ayudarte lo antes posible.
           </p>

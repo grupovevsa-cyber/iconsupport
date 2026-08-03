@@ -116,6 +116,7 @@ serve(async (req: Request) => {
             categoria: 'soporte',
             cliente_id: perfil?.id || null,
             origen: 'whatsapp',
+            empresa_id: sesion.empresa_id || null,
           })
           .select('id')
           .single()

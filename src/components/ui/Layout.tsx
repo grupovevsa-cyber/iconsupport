@@ -27,7 +27,6 @@ const NAV_LINKS: Record<UserRole, NavItem[]> = {
   superadmin: [
     { to: '/superadmin/dashboard',     icon: TicketIcon,      label: 'Empresas (Tenants)' },
     { to: '/superadmin/usuarios',      icon: Users,           label: 'Gestión Global de Usuarios' },
-    { to: '/superadmin/configuracion', icon: Settings,        label: 'Configuración Global' },
   ],
   cliente: [
     { to: '/cliente/nuevo-ticket', icon: Plus,      label: 'Solicitar Soporte' },
