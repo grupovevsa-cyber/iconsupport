@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ficha Técnica - ICON Support</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm;
+    }
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #333;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 3px solid #4f46e5;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+      margin-right: 15px;
+    }
+    h1 {
+      color: #1e293b;
+      margin: 0;
+      font-size: 28px;
+    }
+    h2 {
+      color: #4f46e5;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 5px;
+      margin-top: 30px;
+      font-size: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 10px 15px;
+      text-align: left;
+    }
+    th {
+      background-color: #f8fafc;
+      width: 35%;
+      color: #475569;
+    }
+    .screenshot-container {
+      text-align: center;
+      margin-top: 20px;
+      padding: 15px;
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    .screenshot-container img {
+      max-width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .footer {
+      margin-top: 50px;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 15px;
+    }
+    .legal-box {
+      background-color: #fef2f2;
+      border-left: 4px solid #ef4444;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    .btn-print {
+      display: block;
+      width: 200px;
+      margin: 20px auto;
+      padding: 10px;
+      text-align: center;
+      background: #4f46e5;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    @media print {
+      .btn-print {
+        display: none;
+      }
+      body {
+        background: transparent;
+      }
+      .container {
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <button class="btn-print" onclick="window.print()">🖨️ Descargar como PDF</button>
+
+    <div class="header">
+      <div class="logo-container">
+        <div class="logo-icon">⚡</div>
+        <h1>ICON Support</h1>
+      </div>
+      <p><strong>FICHA TÉCNICA Y DE REGISTRO DE SOFTWARE</strong></p>
+    </div>
+
+    <h2>1. Información General del Software</h2>
+    <table>
+      <tr>
+        <th>Nombre de la Aplicación</th>
+        <td><strong>ICON Support</strong></td>
+      </tr>
+      <tr>
+        <th>Desarrollado por</th>
+        <td><strong>GRUPO VEV, S.A.</strong></td>
+      </tr>
+      <tr>
+        <th>Tipo de Software</th>
+        <td>Sistema SaaS de Gestión de Soporte Técnico (Web & Móvil)</td>
+      </tr>
+      <tr>
+        <th>Fecha de Emisión</th>
+        <td>Agosto 2026</td>
+      </tr>
+      <tr>
+        <th>Finalidad</th>
+        <td>Gestión de tickets, atención al cliente mediante Inteligencia Artificial, integraciones con WhatsApp Cloud API y generación de reportes técnicos.</td>
+      </tr>
+    </table>
+
+    <h2>2. Derechos de Propiedad y Registro de Marca</h2>
+    <div class="legal-box">
+      <p><strong>DECLARACIÓN DE TITULARIDAD:</strong></p>
+      <p>El presente documento certifica que el código fuente, la arquitectura de base de datos, la interfaz gráfica de usuario (GUI) y la identidad visual (logotipo, nombre comercial "ICON") de la aplicación <strong>ICON Support</strong> son propiedad intelectual exclusiva de <strong>GRUPO VEV, S.A.</strong></p>
+      <p>Esta ficha técnica sirve como soporte documental de las características y el funcionamiento del software para fines de <strong>Registro de Marca Comercial, Registro de Derecho de Autor (Copyright) y Protección de Propiedad Intelectual</strong> ante las autoridades competentes.</p>
+    </div>
+
+    <h2>3. Características Técnicas</h2>
+    <table>
+      <tr>
+        <th>Arquitectura</th>
+        <td>Multi-Tenant (Múltiples Empresas), Cliente-Servidor.</td>
+      </tr>
+      <tr>
+        <th>Frontend (Interfaz)</th>
+        <td>React, TailwindCSS, TypeScript, Vite.</td>
+      </tr>
+      <tr>
+        <th>Backend & Base de Datos</th>
+        <td>Supabase (PostgreSQL), Edge Functions (Deno).</td>
+      </tr>
+      <tr>
+        <th>Módulos Principales</th>
+        <td>
+          <ul>
+            <li>Panel de SuperAdministrador (Gestión de Tenants).</li>
+            <li>Panel Administrativo (Métricas, Reportes, IA).</li>
+            <li>Portal de Soporte Técnico y Generación de PDF.</li>
+            <li>Bot Inteligente y Webhook de Meta WhatsApp.</li>
+          </ul>
+        </td>
+      </tr>
+    </table>
+
+    <h2>4. Interfaz Principal (Pantalla de Inicio)</h2>
+    <p>A continuación, se adjunta la captura oficial de la pantalla de inicio de sesión de la aplicación web, demostrando la aplicación del diseño, el uso de la marca <strong>ICON Support</strong> y los elementos interactivos propiedad de GRUPO VEV, S.A.</p>
+    
+    <div class="screenshot-container">
+      <img src="login_screenshot.png" alt="Pantalla de Inicio - ICON Support" />
+      <p style="font-size: 12px; color: #64748b; margin-top: 10px;">Fig. 1: Interfaz de Autenticación de Usuarios (Login).</p>
+    </div>
+
+    <div class="footer">
+      <p>Documento Generado Exclusivamente para <strong>GRUPO VEV, S.A.</strong><br>Todos los derechos reservados &copy; 2026</p>
+    </div>
+  </div>
+
+</body>
+</html>

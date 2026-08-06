@@ -52,6 +52,19 @@ export function ManualesPage() {
       textColor: 'text-purple-400',
       badgeColor: 'bg-purple-500/15 text-purple-400',
       icon: <Shield size={20} className="text-purple-400" />
+    },
+    {
+      id: 'ficha_tecnica',
+      title: 'Ficha Técnica de Software',
+      subtitle: 'Documento técnico, legal y de titularidad de la marca.',
+      desc: 'Ficha técnica oficial del software desarrollada por GRUPO VEV, S.A. Utilizada para soporte documental de Propiedad Intelectual, Registro de Marca y manual de software.',
+      urlHtml: '/ficha_tecnica.html',
+      urlPdf: '/ficha_tecnica.html', // Funciona igual imprimiendo desde el HTML
+      roles: ['superadmin'],
+      color: 'border-blue-500/20 hover:border-blue-500/40 bg-blue-500/5',
+      textColor: 'text-blue-400',
+      badgeColor: 'bg-blue-500/15 text-blue-400',
+      icon: <Info size={20} className="text-blue-400" />
     }
   ]
 
