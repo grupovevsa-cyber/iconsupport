@@ -21,6 +21,7 @@ import { EjecucionTareaPage } from './pages/tecnico/EjecucionTareaPage'
 import { ManualesPage } from './pages/shared/ManualesPage'
 import { UpdatePasswordPage } from './pages/auth/UpdatePasswordPage'
 import { SuperAdminDashboard } from './pages/superadmin/SuperAdminDashboard'
+import { VisorRemotoPage } from './pages/tecnico/VisorRemotoPage'
 
 // ============================================================
 // ICON Support — App principal con routing
@@ -231,6 +232,16 @@ export default function App() {
 
         {/* Ruta pública: seguimiento de ticket vía QR */}
         <Route path="/ticket/seguimiento/:id" element={<SeguimientoPage />} />
+
+        {/* Visor remoto (Protegido, pantalla completa sin layout) */}
+        <Route
+          path="/admin/visor-remoto/:id"
+          element={
+            <RequireAuth>
+              <VisorRemotoPage />
+            </RequireAuth>
+          }
+        />
 
         {/* Rutas protegidas */}
         <Route

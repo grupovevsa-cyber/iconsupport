@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   Clock, User, Tag, AlertCircle, CheckCircle2,
-  Loader2, MessageSquare, Zap, Timer, CheckSquare, Trash2, Plus, Circle, FileText
+  Loader2, MessageSquare, Zap, Timer, CheckSquare, Trash2, Plus, Circle, FileText, MonitorPlay, ExternalLink
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -168,6 +168,34 @@ export function SeguimientoPage() {
             </div>
           </div>
         </div>
+
+        {/* Banner de Soporte Remoto */}
+        {ticket.estado_remoto && ticket.estado_remoto !== 'inactivo' && ticket.estado_remoto !== 'finalizado' && (
+          <div className="bg-brand-500/10 border border-brand-500/30 rounded-2xl p-5 animate-pulse-slow">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-brand-500/20 flex items-center justify-center shrink-0">
+                <MonitorPlay size={20} className="text-brand-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-white mb-1">Sesión de Asistencia Remota Solicitada</h3>
+                <p className="text-xs text-slate-300 mb-3">
+                  Un técnico requiere conectarse a su equipo. Por favor, genere un código de asistencia en Google Remote Desktop y compártalo con el técnico por el chat.
+                </p>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="https://remotedesktop.google.com/support"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                  >
+                    <ExternalLink size={14} />
+                    Generar Código en Google Remote
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Título y descripción */}
         <div className="bg-surface-900 rounded-2xl border border-slate-800 p-5">

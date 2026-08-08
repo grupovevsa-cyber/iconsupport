@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { QRTicket } from '../../components/QRTicket'
+import { RemoteSupportPanel } from '../../components/tickets/RemoteSupportPanel'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { useTickets } from '../../hooks/useTickets'
@@ -45,6 +46,7 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
   const [tecnicos, setTecnicos] = useState<Profile[]>([])
   const [clientes, setClientes] = useState<Profile[]>([])
   const [ticketSeleccionado, setTicketSeleccionado] = useState<Ticket | null>(null)
+  const [soporteTicket, setSoporteTicket] = useState<Ticket | null>(null)
   
   // Tareas
   const { tareas, fetchTareas } = useTareas()
@@ -421,6 +423,15 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
                               <FileText size={11} />
                               Reporte
                             </button>
+                            
+                            {/* Soporte Remoto */}
+                            <button
+                              onClick={() => setSoporteTicket(ticket)}
+                              className="flex items-center gap-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+                            >
+                              <MonitorPlay size={11} />
+                              Soporte Remoto
+                            </button>
                           </>
                         )}
                       </div>
@@ -459,6 +470,22 @@ export function DashboardTecnicoPage({ currentUser }: DashboardTecnicoProps) {
             >
               Cerrar
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Soporte Remoto */}
+      {soporteTicket && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={() => setSoporteTicket(null)}
+        >
+          <div onClick={e => e.stopPropagation()}>
+            <RemoteSupportPanel
+              ticket={soporteTicket}
+              currentUser={currentUser}
+              onClose={() => setSoporteTicket(null)}
+            />
           </div>
         </div>
       )}

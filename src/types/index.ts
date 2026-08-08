@@ -55,11 +55,28 @@ export interface Ticket {
   creado_en: string;
   actualizado_en: string;
   empresa_id?: string;
+  empresa_id?: string;
+  estado_remoto?: 'inactivo' | 'solicitado' | 'conectado' | 'finalizado';
   // Relaciones (joins)
   cliente?: Profile;
   tecnico_asignado?: Profile;
   bitacora?: BitacoraMensaje[];
   tareas?: Tarea[];
+}
+
+export interface SesionRemota {
+  id: string;
+  ticket_id: string;
+  tecnico_id: string;
+  cliente_id?: string;
+  empresa_id?: string;
+  codigo_conexion?: string;
+  password_conexion?: string;
+  estado: 'solicitado' | 'conectado' | 'finalizado' | 'cancelado';
+  notas_sesion?: string;
+  iniciada_en?: string;
+  finalizada_en?: string;
+  creado_en: string;
 }
 
 // ── Formulario de creación de ticket ─────────────────────
